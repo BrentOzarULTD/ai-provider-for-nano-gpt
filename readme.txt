@@ -1,62 +1,77 @@
-=== AI Provider for OpenRouter ===
-Contributors: psykro
-Tags: ai, openrouter, artificial-intelligence, connector
-Requires at least: 6.9
+=== AI Provider for Nano-GPT ===
+Contributors: psykro, brentozar
+Tags: ai, nano-gpt, image-generation, artificial-intelligence, connector
+Requires at least: 7.0
 Tested up to: 7.0
 Stable tag: 1.0.0
 Requires PHP: 7.4
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-AI Provider for OpenRouter for the PHP AI Client SDK.
+Nano-GPT text and image generation for the WordPress AI Client.
 
 == Description ==
 
-This plugin provides OpenRouter integration for the PHP AI Client SDK. It enables WordPress sites to use hundreds of AI models from various providers through OpenRouter's unified, OpenAI-compatible API.
-
-== External services ==
-
-This plugin connects to the [Open Router API](https://openrouter.ai/docs/) to generate text using a wide range of AI models.
-
-Using this plugin requires an OpenRouter API key, which can be obtained by creating an account on the [OpenRouter](https://openrouter.ai/) website. Create an account and generate an API key at https://openrouter.ai/settings/keys.
-
-You can find the OpenRouter terms of service here: https://openrouter.ai/terms, and their privacy policy here: https://openrouter.ai/privacy.
+AI Provider for Nano-GPT connects the WordPress AI Client to Nano-GPT's OpenAI-compatible API.
 
 **Features:**
 
-* Text generation with any OpenRouter-supported model
-* Automatic model discovery from the OpenRouter API
-* Automatic provider registration
+* Text generation through Nano-GPT's current text model catalog
+* Text-to-image generation through the current image model catalog
+* Subscription-included versus paid labels in model selectors
+* Model family, release month, and context size in model labels when available
+* USD and Nano (XNO) balance display under Settings > Nano-GPT
+* Native WordPress Connectors configuration
+* Automatic provider and model discovery
 
-Available models are dynamically discovered from the OpenRouter /models endpoint, including models from OpenAI, Anthropic, Google, Meta, Mistral, and many more.
+"Subscription-included" means Nano-GPT reports that a text model is covered by the authenticated account's subscription. It does not mean universal or unlimited free access. Image models are labeled pay-as-you-go.
 
-**Requirements:**
+This maintained fork preserves the history and credit of Jonathan Bossenger's original OpenRouter provider.
 
-* PHP 7.4 or higher
-* For WordPress 6.9, the [wordpress/php-ai-client](https://github.com/WordPress/php-ai-client) package must be installed
-* For WordPress 7.0 and above, no additional changes are required
-* OpenRouter API key
+== External services ==
+
+This plugin connects to Nano-GPT at https://nano-gpt.com/.
+
+It sends the configured API key to retrieve the current text and image model catalogs, classify subscription-included text models, perform generation, and retrieve account balances. Prompts, attachments, generation settings, and generated content are sent when a site feature requests generation. Nano-GPT may send request content to the operator of the selected model.
+
+A Nano-GPT API key is required and can be obtained from https://nano-gpt.com/api.
+
+Nano-GPT API documentation: https://docs.nano-gpt.com/
+Nano-GPT terms of service: https://nano-gpt.com/legal/terms-of-service
+Nano-GPT privacy policy: https://nano-gpt.com/legal/privacy-policy
 
 == Installation ==
 
-1. Upload the plugin files to `/wp-content/plugins/ai-provider-for-openrouter/`
-2. Activate the plugin through the 'Plugins' menu in WordPress
-3. Configure your OpenRouter API key via the `OPENROUTER_API_KEY` environment variable or constant
+1. Upload the plugin files to `/wp-content/plugins/ai-provider-for-nano-gpt/`.
+2. Activate the plugin through the Plugins screen.
+3. Open Settings > Connectors and configure the Nano-GPT API key.
+4. Open Settings > Nano-GPT to verify the connection and view the balance.
+
+The `NANOGPT_API_KEY` environment variable or PHP constant can be used instead of storing the key in WordPress.
 
 == Frequently Asked Questions ==
 
-= How do I get an OpenRouter API key? =
+= How do I get a Nano-GPT API key? =
 
-Visit [OpenRouter](https://openrouter.ai/) to create an account and generate an API key at https://openrouter.ai/settings/keys.
+Visit https://nano-gpt.com/api and create an API key.
 
-= Does this plugin work without the PHP AI Client? =
+= Does "Subscription-included" mean a model is free for everyone? =
 
-No, this plugin requires the PHP AI Client plugin to be installed and activated. It provides the OpenRouter-specific implementation that the PHP AI Client uses.
+No. It means Nano-GPT lists that text model as included for the API key's active subscription. Nano-GPT's plan limits and terms still apply.
+
+= Where can I see my remaining balance? =
+
+Open Settings > Nano-GPT. The USD and Nano balances are cached for five minutes; use the refresh button to request a current value.
+
+= What image operations are supported? =
+
+The initial release supports text-to-image generation. Image editing and image-to-image workflows are not yet supported.
 
 == Changelog ==
 
 = 1.0.0 =
 
-* Initial release
-* Support for text generation models via OpenRouter
-* Automatic model discovery from the OpenRouter API
+* Replaced OpenRouter with Nano-GPT text generation and dynamic model discovery.
+* Added Nano-GPT text-to-image generation.
+* Added subscription-aware billing labels, model family, release month, and context size.
+* Added WordPress Connectors integration and account balance display.

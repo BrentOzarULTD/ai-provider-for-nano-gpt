@@ -1,17 +1,17 @@
 <?php
 
 /**
- * PSR-4 autoloader for the AI Provider for OpenRouter package.
+ * PSR-4 autoloader for the AI Provider for Nano-GPT package.
  *
  * @since 1.0.0
  *
- * @package WordPress\OpenRouterAiProvider
+ * @package WordPress\NanoGptAiProvider
  */
 
 declare(strict_types=1);
 
 spl_autoload_register(static function (string $class): void {
-    $prefix = 'WordPress\\OpenRouterAiProvider\\';
+    $prefix = 'WordPress\\NanoGptAiProvider\\';
     $baseDir = __DIR__ . '/';
 
     $len = strlen($prefix);

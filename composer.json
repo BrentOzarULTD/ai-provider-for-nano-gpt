@@ -1,43 +1,55 @@
 {
-    "name": "jonathanbossenger/ai-provider-for-openrouter",
-    "description": "AI Provider for OpenRouter for the PHP AI Client SDK. Works as both a Composer package and WordPress plugin.",
+    "name": "brentozar/ai-provider-for-nanogpt",
+    "description": "Nano-GPT text and image provider for the WordPress AI Client. Works as both a Composer package and a WordPress plugin.",
     "license": "GPL-2.0-or-later",
     "keywords": [
         "ai",
-        "openrouter",
+        "nano-gpt",
+        "nanogpt",
         "wordpress",
-        "llm"
+        "llm",
+        "image-generation"
     ],
     "authors": [
         {
             "name": "Jonathan Bossenger",
-            "homepage": "https://jonathanbossenger.com/"
+            "homepage": "https://jonathanbossenger.com/",
+            "role": "Original author"
+        },
+        {
+            "name": "Brent Ozar",
+            "homepage": "https://www.brentozar.com/",
+            "role": "Maintainer"
         }
     ],
-    "homepage": "https://github.com/jonathanbossenger/ai-provider-for-openrouter",
+    "homepage": "https://github.com/BrentOzarULTD/ai-provider-for-nano-gpt",
     "support": {
-        "issues": "https://github.com/jonathanbossenger/ai-provider-for-openrouter/issues",
-        "source": "https://github.com/jonathanbossenger/ai-provider-for-openrouter"
+        "issues": "https://github.com/BrentOzarULTD/ai-provider-for-nano-gpt/issues",
+        "source": "https://github.com/BrentOzarULTD/ai-provider-for-nano-gpt"
     },
     "require": {
-        "php": ">=7.4"
+        "php": ">=7.4",
+        "wordpress/php-ai-client": "^0.4 || ^1.0"
     },
     "require-dev": {
         "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
         "phpcompatibility/php-compatibility": "dev-develop",
+        "php-stubs/wordpress-stubs": "^6.9 || ^7.0",
         "phpstan/phpstan": "~2.1",
+        "phpunit/phpunit": "^9.6",
         "slevomat/coding-standard": "^8.20",
-        "squizlabs/php_codesniffer": "^3.7 || ^4.0",
-        "wordpress/php-ai-client": "^0.4 || dev-trunk"
-    },
-    "suggest": {
-        "wordpress/php-ai-client": "Required. The core PHP AI Client SDK that this provider extends."
+        "squizlabs/php_codesniffer": "^3.7 || ^4.0"
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
     "autoload": {
         "psr-4": {
-            "WordPress\\OpenRouterAiProvider\\": "src/"
+            "WordPress\\NanoGptAiProvider\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "WordPress\\NanoGptAiProvider\\Tests\\": "tests/"
         }
     },
     "config": {
@@ -54,10 +66,12 @@
     "scripts": {
         "lint": [
             "@phpcs",
-            "@phpstan"
+            "@phpstan",
+            "@test"
         ],
         "phpcbf": "phpcbf",
         "phpcs": "phpcs",
-        "phpstan": "phpstan analyze --memory-limit=256M"
+        "phpstan": "phpstan analyze --memory-limit=1G --debug",
+        "test": "phpunit"
     }
 }

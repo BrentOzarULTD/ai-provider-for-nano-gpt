@@ -1,1 +1,12 @@
 /vendor/
+
+# Local credentials and environment overrides.
+.env
+.env.*
+!.env.example
+
+# Local test runner state.
+.phpunit.result.cache
+
+# Local WordPress test site and generated screenshots.
+/.wordpress-local/

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace WordPress\OpenRouterAiProvider\Provider;
+namespace WordPress\NanoGptAiProvider\Provider;
 
 use WordPress\AiClient\Common\Exception\RuntimeException;
 use WordPress\AiClient\Providers\ApiBasedImplementation\AbstractApiProvider;
@@ -14,67 +14,77 @@ use WordPress\AiClient\Providers\Enums\ProviderTypeEnum;
 use WordPress\AiClient\Providers\Http\Enums\RequestAuthenticationMethod;
 use WordPress\AiClient\Providers\Models\Contracts\ModelInterface;
 use WordPress\AiClient\Providers\Models\DTO\ModelMetadata;
-use WordPress\OpenRouterAiProvider\Metadata\OpenRouterModelMetadataDirectory;
-use WordPress\OpenRouterAiProvider\Models\OpenRouterTextGenerationModel;
+use WordPress\NanoGptAiProvider\Metadata\NanoGptModelMetadataDirectory;
+use WordPress\NanoGptAiProvider\Models\NanoGptImageGenerationModel;
+use WordPress\NanoGptAiProvider\Models\NanoGptTextGenerationModel;
 
 /**
- * Class for the AI Provider for OpenRouter.
+ * Nano-GPT provider for the WordPress AI Client.
  *
  * @since 1.0.0
  */
-class OpenRouterProvider extends AbstractApiProvider
+class NanoGptProvider extends AbstractApiProvider
 {
     /**
      * {@inheritDoc}
-     *
-     * @since 1.0.0
      */
     protected static function baseUrl(): string
     {
-        return 'https://openrouter.ai/api/v1';
+        return 'https://nano-gpt.com/api/v1';
+    }
+
+    /**
+     * Returns a URL for Nano-GPT's subscription-specific API.
+     *
+     * @since 1.0.0
+     *
+     * @param string $path Optional path to append.
+     * @return string Complete subscription API URL.
+     */
+    public static function subscriptionUrl(string $path = ''): string
+    {
+        $baseUrl = 'https://nano-gpt.com/api/subscription/v1';
+
+        return $path === '' ? $baseUrl : $baseUrl . '/' . ltrim($path, '/');
     }
 
     /**
      * {@inheritDoc}
-     *
-     * @since 1.0.0
      */
     protected static function createModel(
         ModelMetadata $modelMetadata,
         ProviderMetadata $providerMetadata
     ): ModelInterface {
-        $capabilities = $modelMetadata->getSupportedCapabilities();
-        foreach ($capabilities as $capability) {
+        foreach ($modelMetadata->getSupportedCapabilities() as $capability) {
+            if ($capability->isImageGeneration()) {
+                return new NanoGptImageGenerationModel($modelMetadata, $providerMetadata);
+            }
             if ($capability->isTextGeneration()) {
-                return new OpenRouterTextGenerationModel($modelMetadata, $providerMetadata);
+                return new NanoGptTextGenerationModel($modelMetadata, $providerMetadata);
             }
         }
 
         throw new RuntimeException(
-            'Unsupported model capabilities: ' . implode(', ', $capabilities)
+            'Unsupported model capabilities: ' . implode(', ', $modelMetadata->getSupportedCapabilities())
         );
     }
 
     /**
      * {@inheritDoc}
-     *
-     * @since 1.0.0
      */
     protected static function createProviderMetadata(): ProviderMetadata
     {
         return new ProviderMetadata(
-            'openrouter',
-            'OpenRouter',
+            'nanogpt',
+            'Nano-GPT',
             ProviderTypeEnum::cloud(),
-            'https://openrouter.ai/settings/keys',
+            'https://nano-gpt.com/api',
             RequestAuthenticationMethod::apiKey()
         );
     }
 
     /**
      * {@inheritDoc}
-     *
-     * @since 1.0.0
      */
     protected static function createProviderAvailability(): ProviderAvailabilityInterface
     {
@@ -85,11 +95,9 @@ class OpenRouterProvider extends AbstractApiProvider
 
     /**
      * {@inheritDoc}
-     *
-     * @since 1.0.0
      */
     protected static function createModelMetadataDirectory(): ModelMetadataDirectoryInterface
     {
-        return new OpenRouterModelMetadataDirectory();
+        return new NanoGptModelMetadataDirectory();
     }
 }

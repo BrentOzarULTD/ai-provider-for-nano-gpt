@@ -1,77 +1,105 @@
-# AI Provider for OpenRouter
+# AI Provider for Nano-GPT
 
-An AI Provider for OpenRouter for the [PHP AI Client](https://github.com/WordPress/php-ai-client) SDK. Works as both a Composer package and a WordPress plugin.
+A [Nano-GPT](https://nano-gpt.com/) provider for the [WordPress PHP AI Client](https://github.com/WordPress/php-ai-client). It supports dynamic text and image model discovery, text generation, text-to-image generation, subscription-aware model labels, and account balance display in WordPress.
+
+This project is a maintained fork of Jonathan Bossenger's original OpenRouter provider. Its history and attribution are intentionally preserved so generally useful improvements can still be contributed upstream.
 
 ## Requirements
 
-- PHP 7.4 or higher
-- When using with WordPress, requires WordPress 7.0 or higher
-    - If using an older WordPress release, the [wordpress/php-ai-client](https://github.com/WordPress/php-ai-client) package must be installed
+- PHP 7.4 or newer
+- WordPress 7.0 or newer when installed as a plugin
+- A Nano-GPT API key
 
-## Installation
+## WordPress installation
 
-### As a Composer Package
+1. Upload the project to `/wp-content/plugins/ai-provider-for-nano-gpt/`.
+2. Activate **AI Provider for Nano-GPT**.
+3. Open **Settings > Connectors** and add the Nano-GPT API key.
+4. Open **Settings > Nano-GPT** to confirm the connection and view the account balance.
 
-```bash
-composer require wordpress/ai-provider-for-openrouter
-```
-
-### As a WordPress Plugin
-
-1. Download the plugin files
-2. Upload to `/wp-content/plugins/ai-provider-for-openrouter/`
-3. Ensure the PHP AI Client plugin is installed and activated
-4. Activate the plugin through the WordPress admin
-
-## Usage
-
-### With WordPress
-
-The provider automatically registers itself with the PHP AI Client on the `init` hook. Simply ensure both plugins are active and configure your API key:
+For deployment environments, the key can instead be supplied as an environment variable or PHP constant:
 
 ```php
-// Set your OpenRouter API key (or use the OPENROUTER_API_KEY environment variable)
-putenv('OPENROUTER_API_KEY=your-api-key');
-
-// Use the provider
-$result = AiClient::prompt('Hello, world!')
-    ->usingProvider('openrouter')
-    ->generateTextResult();
+define('NANOGPT_API_KEY', 'your-api-key');
 ```
 
-### As a Standalone Package
+The provider ID used by the AI Client is `nanogpt`.
+
+## Composer installation
+
+Until the fork is published to Packagist, add this repository as a VCS repository in the consuming project's `composer.json`, then require `brentozar/ai-provider-for-nanogpt`. The package installs the PHP AI Client as a dependency.
+
+Register the provider in a standalone application:
 
 ```php
 use WordPress\AiClient\AiClient;
-use WordPress\OpenRouterAiProvider\Provider\OpenRouterProvider;
+use WordPress\NanoGptAiProvider\Provider\NanoGptProvider;
 
-// Register the provider
-$registry = AiClient::defaultRegistry();
-$registry->registerProvider(OpenRouterProvider::class);
+putenv('NANOGPT_API_KEY=your-api-key');
+AiClient::defaultRegistry()->registerProvider(NanoGptProvider::class);
 
-// Set your API key
-putenv('OPENROUTER_API_KEY=your-api-key');
-
-// Generate text
-$result = AiClient::prompt('Explain quantum computing')
-    ->usingProvider('openrouter')
-    ->generateTextResult();
-
-echo $result->toText();
+$text = AiClient::prompt('Explain database indexing in plain language.')
+    ->usingProvider('nanogpt')
+    ->generateText();
 ```
 
-## Supported Models
-
-Available models are dynamically discovered from the OpenRouter API. This includes hundreds of models from providers like OpenAI, Anthropic, Google, Meta, Mistral, and many more. See the [OpenRouter documentation](https://openrouter.ai/models) for the full list of available models.
-
-## Configuration
-
-The provider uses the `OPENROUTER_API_KEY` environment variable for authentication. You can set this in your environment or via PHP:
+Select a specific text model when predictable routing matters:
 
 ```php
-putenv('OPENROUTER_API_KEY=your-api-key');
+$model = NanoGptProvider::model('anthropic/claude-sonnet-4.5');
+
+$text = AiClient::prompt('Summarize this incident report.')
+    ->usingModel($model)
+    ->generateText();
 ```
+
+Generate an image with a current image model ID from Nano-GPT's catalog:
+
+```php
+$model = NanoGptProvider::model('your-image-model-id');
+
+$image = AiClient::prompt('A hand-drawn map of a seaside village')
+    ->usingModel($model)
+    ->generateImage();
+```
+
+Image support currently covers text-to-image generation through Nano-GPT's OpenAI-compatible Images API. Image editing and image-to-image workflows are outside the initial scope.
+
+## Model discovery and labels
+
+The provider retrieves Nano-GPT's current text, subscription, and image catalogs rather than maintaining a stale hard-coded list. Text model labels include the information most useful at selection time:
+
+```text
+Claude Sonnet … — Subscription-included · Claude · 2025-09 · 200K context
+GPT … — Paid · GPT · 2025-08 · 400K context
+```
+
+- **Subscription-included** means Nano-GPT reports the text model as included for the authenticated subscription. It does not mean the model is universally free or that subscription limits cannot apply.
+- **Paid** means requests use pay-as-you-go balance.
+- Image models are labeled **Pay-as-you-go** because Nano-GPT's subscription catalog currently classifies text models only.
+- Release month and context size are shown when supplied by the API.
+
+Consumers that need structured values can inspect `NanoGptModelMetadata` with `isSubscriptionIncluded()`, `getFamily()`, `getReleasedAt()`, `getContextLength()`, and `getCategory()`.
+
+## Balance and credential handling
+
+**Settings > Nano-GPT** shows the available USD and Nano (XNO) balances. Results are cached for five minutes and can be refreshed manually. API keys are never displayed by this plugin.
+
+For local development, copy `.env.example` to `.env`. Local `.env` variants and PHPUnit cache files are ignored by Git. WordPress does not load `.env` files itself; use your local environment loader or configure the key through Connectors.
+
+## External service and privacy
+
+Model catalogs, prompts, attachments, generation settings, and generated content are sent to Nano-GPT. Nano-GPT may route request content to the provider that operates the selected model. The settings screen also sends the API key to Nano-GPT's balance endpoint. Review the [Nano-GPT API documentation](https://docs.nano-gpt.com/), [terms](https://nano-gpt.com/legal/terms-of-service), and [privacy policy](https://nano-gpt.com/legal/privacy-policy) before use.
+
+## Development
+
+```bash
+composer install
+composer lint
+```
+
+`composer lint` runs PHPCS, PHPStan, and PHPUnit. Tests use fixtures and do not call Nano-GPT or consume balance.
 
 ## License
 
-GPL-2.0-or-later
+GPL-2.0-or-later. See [LICENSE](LICENSE).
