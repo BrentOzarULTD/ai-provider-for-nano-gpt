@@ -21,8 +21,12 @@ declare(strict_types=1);
 namespace WordPress\NanoGptAiProvider;
 
 use WordPress\AiClient\AiClient;
+use WordPress\NanoGptAiProvider\Observability\ActivityLoggingHttpTransporter;
 use WordPress\NanoGptAiProvider\Provider\NanoGptProvider;
+use WordPress\NanoGptAiProvider\WordPress\ActivityPage;
+use WordPress\NanoGptAiProvider\WordPress\ActivityRepository;
 use WordPress\NanoGptAiProvider\WordPress\SettingsPage;
+use WordPress\NanoGptAiProvider\WordPress\WordPressActivityRecorder;
 
 if (!defined('ABSPATH')) {
     return;
@@ -45,7 +49,19 @@ function register_provider(): void
     if (!$registry->hasProvider(NanoGptProvider::class)) {
         $registry->registerProvider(NanoGptProvider::class);
     }
+
+    $transporter = $registry->getHttpTransporter();
+    if (!$transporter instanceof ActivityLoggingHttpTransporter) {
+        $registry->setHttpTransporter(
+            new ActivityLoggingHttpTransporter($transporter, new WordPressActivityRecorder())
+        );
+    }
 }
 
 add_action('init', __NAMESPACE__ . '\\register_provider', 5);
 SettingsPage::register(__FILE__);
+ActivityPage::register();
+
+register_activation_hook(__FILE__, [ActivityRepository::class, 'install']);
+register_deactivation_hook(__FILE__, [ActivityPage::class, 'deactivate']);
+register_uninstall_hook(__FILE__, [ActivityRepository::class, 'uninstall']);

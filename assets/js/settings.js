@@ -121,9 +121,23 @@
 		filterRows();
 	}
 
+	function initializeConfirmations() {
+		document.querySelectorAll( '[data-nanogpt-confirm]' ).forEach( ( button ) => {
+			button.addEventListener( 'click', ( event ) => {
+				if ( ! window.confirm( button.dataset.nanogptConfirm ) ) {
+					event.preventDefault();
+				}
+			} );
+		} );
+	}
+
 	if ( document.readyState === 'loading' ) {
-		document.addEventListener( 'DOMContentLoaded', initializeModelTable );
+		document.addEventListener( 'DOMContentLoaded', () => {
+			initializeModelTable();
+			initializeConfirmations();
+		} );
 	} else {
 		initializeModelTable();
+		initializeConfirmations();
 	}
 }() );

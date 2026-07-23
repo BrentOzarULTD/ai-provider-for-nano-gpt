@@ -212,6 +212,18 @@ class SettingsPage
             return;
         }
 
+        $tab = self::currentTab();
+        ?>
+        <div class="wrap">
+            <h1><?php echo esc_html__('Nano-GPT', 'ai-provider-for-nano-gpt'); ?></h1>
+            <?php self::renderTabs($tab); ?>
+            <?php if ($tab === 'activity') : ?>
+                <?php ActivityPage::render(); ?>
+            </div>
+                <?php
+                return;
+            endif; ?>
+        <?php
         $apiKey = self::apiKey();
         $balance = null;
         $error = '';
@@ -234,8 +246,6 @@ class SettingsPage
         $modelsUpdated = isset($_GET['nanogpt_models_updated']);
 
         ?>
-        <div class="wrap">
-            <h1><?php echo esc_html__('Nano-GPT', 'ai-provider-for-nano-gpt'); ?></h1>
             <?php if ($modelsUpdated) : ?>
                 <div class="notice notice-success is-dismissible"><p>
                     <?php echo esc_html__('Preferred models saved.', 'ai-provider-for-nano-gpt'); ?>
@@ -336,6 +346,43 @@ class SettingsPage
                 <?php self::renderModelPreferences($models); ?>
             <?php endif; ?>
         </div>
+        <?php
+    }
+
+    private static function currentTab(): string
+    {
+        // The tab only selects which read-only settings view is rendered.
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        $tab = isset($_GET['tab']) && is_string($_GET['tab'])
+            ? sanitize_key(wp_unslash($_GET['tab']))
+            : 'settings';
+
+        return $tab === 'activity' ? 'activity' : 'settings';
+    }
+
+    private static function renderTabs(string $current): void
+    {
+        $tabs = [
+            'settings' => __('Settings and models', 'ai-provider-for-nano-gpt'),
+            'activity' => __('Activity', 'ai-provider-for-nano-gpt'),
+        ];
+        ?>
+        <nav
+            class="nav-tab-wrapper"
+            aria-label="<?php echo esc_attr__('Nano-GPT settings', 'ai-provider-for-nano-gpt'); ?>"
+        >
+            <?php foreach ($tabs as $tab => $label) : ?>
+                <a
+                    class="nav-tab <?php echo $current === $tab ? 'nav-tab-active' : ''; ?>"
+                    href="<?php echo esc_url(add_query_arg(
+                        $tab === 'activity' ? ['tab' => 'activity'] : [],
+                        self::settingsUrl()
+                    )); ?>"
+                >
+                    <?php echo esc_html($label); ?>
+                </a>
+            <?php endforeach; ?>
+        </nav>
         <?php
     }
 

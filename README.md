@@ -1,6 +1,6 @@
 # AI Provider for Nano-GPT
 
-A [Nano-GPT](https://nano-gpt.com/) provider for the [WordPress PHP AI Client](https://github.com/WordPress/php-ai-client). It supports dynamic text and image model discovery, text generation, text-to-image generation, subscription-aware model labels, and account balance display in WordPress.
+A [Nano-GPT](https://nano-gpt.com/) provider for the [WordPress PHP AI Client](https://github.com/WordPress/php-ai-client). It supports dynamic text and image model discovery, text generation, text-to-image generation, subscription-aware model labels, account balance display, and optional local request diagnostics in WordPress.
 
 This project is a maintained fork of Jonathan Bossenger's original OpenRouter provider. Its history and attribution are intentionally preserved so generally useful improvements can still be contributed upstream.
 
@@ -89,9 +89,17 @@ The same page provides a searchable, sortable model catalog and lets administrat
 
 For local development, copy `.env.example` to `.env`. Local `.env` variants and PHPUnit cache files are ignored by Git. WordPress does not load `.env` files itself; use your local environment loader or configure the key through Connectors.
 
+## Activity logging
+
+The **Activity** tab under **Settings > Nano-GPT** can keep a bounded, local history of Nano-GPT text and image generation calls. Logging is disabled by default. When enabled, each record includes the model, capability, status, HTTP status, duration, token counts, request channel, and a best-effort identification of the plugin, theme, WordPress core, or application code that initiated the call.
+
+Prompt, response, and generation-setting storage is a separate opt-in because this content may be personal, confidential, or unpublished. API credentials are redacted, inline base64 image data is omitted, stored payloads are size-limited, and URL query strings are not retained. Site owners can filter recent calls, expand a record for details, clear the log, and configure both an age limit and a maximum record count. The defaults are 7 days and 500 calls. Deleting the plugin removes its activity table and activity settings.
+
+Developers can override best-effort source attribution with the `nanogpt_activity_source_context` filter and inspect or alter individual values before storage with `nanogpt_activity_log_value`.
+
 ## External service and privacy
 
-Model catalogs, prompts, attachments, generation settings, and generated content are sent to Nano-GPT. Nano-GPT may route request content to the provider that operates the selected model. The settings screen also sends the API key to Nano-GPT's balance endpoint. Review the [Nano-GPT API documentation](https://docs.nano-gpt.com/), [terms](https://nano-gpt.com/legal/terms-of-service), and [privacy policy](https://nano-gpt.com/legal/privacy-policy) before use.
+Model catalogs, prompts, attachments, generation settings, and generated content are sent to Nano-GPT. Nano-GPT may route request content to the provider that operates the selected model. The settings screen also sends the API key to Nano-GPT's balance endpoint. If optional activity content logging is enabled, prompts and responses are also retained in the site's own WordPress database according to the configured limits. Review the [Nano-GPT API documentation](https://docs.nano-gpt.com/), [terms](https://nano-gpt.com/legal/terms-of-service), and [privacy policy](https://nano-gpt.com/legal/privacy-policy) before use.
 
 ## Development
 

@@ -22,6 +22,7 @@ AI Provider for Nano-GPT connects the WordPress AI Client to Nano-GPT's OpenAI-c
 * Model family, release month, and context size in model labels when available
 * USD and Nano (XNO) balance display under Settings > Nano-GPT
 * Searchable and sortable model catalog with preferred text, vision, and image models
+* Optional, privacy-aware local activity logging with source, duration, errors, and token counts
 * Native WordPress Connectors configuration
 * Automatic provider and model discovery
 
@@ -68,6 +69,12 @@ Open Settings > Nano-GPT. The USD and Nano balances are cached for five minutes;
 
 The initial release supports text-to-image generation. Image editing and image-to-image workflows are not yet supported.
 
+= Can I troubleshoot recent Nano-GPT calls? =
+
+Yes. Open Settings > Nano-GPT > Activity. Logging is disabled by default. When enabled, the plugin stores a bounded local history with model, type, status, duration, token counts, request context, and best-effort caller attribution.
+
+Storing prompts, responses, and generation settings is a separate opt-in because that content may be personal, confidential, or unpublished. API credentials are redacted, inline base64 image data is omitted, and URL query strings are not retained. The default retention is 7 days and 500 calls, and administrators can clear the log at any time. Deleting the plugin removes its activity table and activity settings.
+
 == Changelog ==
 
 = 2.0.0 =
@@ -77,4 +84,5 @@ The initial release supports text-to-image generation. Image editing and image-t
 * Added subscription-aware billing labels, model family, release month, and context size.
 * Added WordPress Connectors integration and account balance display.
 * Added preferred-model settings with catalog filtering and sorting.
+* Added optional local activity logging with privacy controls, filters, caller attribution, errors, timing, and bounded retention.
 * Fixed image size and orientation support for Nano-GPT's model-specific resolution formats.
