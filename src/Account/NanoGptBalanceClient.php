@@ -41,6 +41,7 @@ class NanoGptBalanceClient
         );
 
         if (is_wp_error($response)) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Escaped by the admin rendering layer.
             throw new RuntimeException($response->get_error_message());
         }
 
@@ -52,6 +53,7 @@ class NanoGptBalanceClient
             $message = is_array($data) && isset($data['message']) && is_string($data['message'])
                 ? $data['message']
                 : 'Nano-GPT returned HTTP ' . $statusCode . '.';
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Escaped by the admin rendering layer.
             throw new RuntimeException($message);
         }
         if (!is_array($data)) {

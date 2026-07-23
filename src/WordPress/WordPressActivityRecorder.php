@@ -37,7 +37,9 @@ class WordPressActivityRecorder implements ActivityRecorderInterface
     ): void {
         $requestData = $this->decodeJson($request->getBody());
         $responseData = $response === null ? [] : $this->decodeJson($response->getBody());
-        $capability = substr((string) parse_url($request->getUri(), PHP_URL_PATH), -19)
+        $urlParts = self::urlParts($request->getUri());
+        $path = isset($urlParts['path']) && is_string($urlParts['path']) ? $urlParts['path'] : '';
+        $capability = substr($path, -19)
             === '/images/generations'
                 ? 'image'
                 : 'text';
@@ -102,6 +104,23 @@ class WordPressActivityRecorder implements ActivityRecorderInterface
             'total_tokens' => $this->nullableInteger($usage['total_tokens'] ?? null),
             'user_id' => $this->nullableInteger($context['request_context']['user_id'] ?? null) ?? 0,
         ]);
+    }
+
+    /**
+     * Uses WordPress URL parsing while retaining Composer-library compatibility.
+     *
+     * @return array<string, mixed> Parsed URL components.
+     */
+    private static function urlParts(string $url): array
+    {
+        if (function_exists('wp_parse_url')) {
+            $parts = wp_parse_url($url);
+        } else {
+            // phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- Standalone Composer fallback.
+            $parts = parse_url($url);
+        }
+
+        return is_array($parts) ? $parts : [];
     }
 
     /**

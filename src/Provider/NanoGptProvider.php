@@ -64,9 +64,12 @@ class NanoGptProvider extends AbstractApiProvider
             }
         }
 
+        // Exception data is escaped only if a rendering layer displays it.
+        // phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped
         throw new RuntimeException(
             'Unsupported model capabilities: ' . implode(', ', $modelMetadata->getSupportedCapabilities())
         );
+        // phpcs:enable WordPress.Security.EscapeOutput.ExceptionNotEscaped
     }
 
     /**

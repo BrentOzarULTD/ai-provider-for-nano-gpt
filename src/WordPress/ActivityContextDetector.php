@@ -21,6 +21,7 @@ class ActivityContextDetector
      */
     public static function detect(): array
     {
+        // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_debug_backtrace -- Caller attribution is an advertised diagnostic feature.
         $source = self::sourceFromTrace(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS));
         $context = self::requestContext();
 
@@ -100,9 +101,12 @@ class ActivityContextDetector
             $context['channel'] = 'cron';
         } elseif (function_exists('wp_doing_ajax') && wp_doing_ajax()) {
             $context['channel'] = 'ajax';
+            // This read-only value describes the request; it does not authorize an action.
+            // phpcs:disable WordPress.Security.NonceVerification.Recommended
             if (isset($_REQUEST['action']) && is_string($_REQUEST['action'])) {
                 $context['action'] = sanitize_key(wp_unslash($_REQUEST['action']));
             }
+            // phpcs:enable WordPress.Security.NonceVerification.Recommended
         } elseif (defined('REST_REQUEST') && REST_REQUEST) {
             $context['channel'] = 'rest';
         } elseif (function_exists('is_admin') && is_admin()) {
@@ -111,12 +115,16 @@ class ActivityContextDetector
             $context['channel'] = 'front-end';
         }
 
+        // This read-only server value describes the request; it does not authorize an action.
+        // phpcs:disable WordPress.Security.NonceVerification.Recommended
         if (isset($_SERVER['REQUEST_URI']) && is_string($_SERVER['REQUEST_URI'])) {
-            $requestPath = wp_parse_url(wp_unslash($_SERVER['REQUEST_URI']), PHP_URL_PATH);
+            $requestUri = sanitize_text_field(wp_unslash($_SERVER['REQUEST_URI']));
+            $requestPath = wp_parse_url($requestUri, PHP_URL_PATH);
             if (is_string($requestPath)) {
                 $context['request_path'] = sanitize_text_field($requestPath);
             }
         }
+        // phpcs:enable WordPress.Security.NonceVerification.Recommended
         if (isset($GLOBALS['wp_current_filter']) && is_array($GLOBALS['wp_current_filter'])) {
             $hooks = array_values(array_filter($GLOBALS['wp_current_filter'], 'is_string'));
             $context['hooks'] = array_slice($hooks, -5);

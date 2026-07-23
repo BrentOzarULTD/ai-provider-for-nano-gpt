@@ -67,7 +67,12 @@ class ActivityRepository
     public static function uninstall(): void
     {
         $wpdb = self::database();
-        $wpdb->query(self::prepared($wpdb->prepare('DROP TABLE IF EXISTS %i', self::tableName())));
+        $sql = $wpdb->prepare('DROP TABLE IF EXISTS %i', self::tableName());
+        if (!is_string($sql)) {
+            throw new RuntimeException('The uninstall query could not be prepared.');
+        }
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange,WordPress.DB.PreparedSQL.NotPrepared -- Prepared and validated above.
+        $wpdb->query($sql);
         delete_option(self::DB_VERSION_OPTION);
         delete_option(ActivitySettings::ENABLED_OPTION);
         delete_option(ActivitySettings::CONTENT_OPTION);
@@ -82,6 +87,7 @@ class ActivityRepository
     {
         $wpdb = self::database();
         self::maybeInstall();
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Activity records are intentionally stored in the plugin table.
         $wpdb->insert(self::tableName(), $record);
         $this->prune(ActivitySettings::retentionDays(), ActivitySettings::maxRecords());
     }
@@ -95,11 +101,35 @@ class ActivityRepository
         $wpdb = self::database();
         self::maybeInstall();
         $table = self::tableName();
-        $where = $this->whereClause($wpdb, $filters);
         $offset = max(0, ($page - 1) * $perPage);
-        $from = self::prepared($wpdb->prepare('FROM %i', $table));
-        $itemsSql = "SELECT * {$from} {$where} "
-            . "ORDER BY created_at_gmt DESC, id DESC LIMIT {$perPage} OFFSET {$offset}";
+        $itemsSql = $wpdb->prepare(
+            'SELECT * FROM %i
+                WHERE (%s = %s OR status = %s)
+                AND (%s = %s OR capability = %s)
+                AND (%s = %s OR model = %s)
+                AND (%s = %s OR source_name = %s)
+                ORDER BY created_at_gmt DESC, id DESC
+                LIMIT %d OFFSET %d',
+            $table,
+            $filters['status'] ?? '',
+            '',
+            $filters['status'] ?? '',
+            $filters['capability'] ?? '',
+            '',
+            $filters['capability'] ?? '',
+            $filters['model'] ?? '',
+            '',
+            $filters['model'] ?? '',
+            $filters['source'] ?? '',
+            '',
+            $filters['source'] ?? '',
+            $perPage,
+            $offset
+        );
+        if (!is_string($itemsSql)) {
+            throw new RuntimeException('The activity query could not be prepared.');
+        }
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.NotPrepared -- Prepared and validated above.
         $results = $wpdb->get_results($itemsSql);
         $items = [];
         if (is_array($results)) {
@@ -109,7 +139,31 @@ class ActivityRepository
                 }
             }
         }
-        $count = $wpdb->get_var("SELECT COUNT(*) {$from} {$where}");
+        $countSql = $wpdb->prepare(
+            'SELECT COUNT(*) FROM %i
+                WHERE (%s = %s OR status = %s)
+                AND (%s = %s OR capability = %s)
+                AND (%s = %s OR model = %s)
+                AND (%s = %s OR source_name = %s)',
+            $table,
+            $filters['status'] ?? '',
+            '',
+            $filters['status'] ?? '',
+            $filters['capability'] ?? '',
+            '',
+            $filters['capability'] ?? '',
+            $filters['model'] ?? '',
+            '',
+            $filters['model'] ?? '',
+            $filters['source'] ?? '',
+            '',
+            $filters['source'] ?? ''
+        );
+        if (!is_string($countSql)) {
+            throw new RuntimeException('The activity count query could not be prepared.');
+        }
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.NotPrepared -- Prepared and validated above.
+        $count = $wpdb->get_var($countSql);
 
         return [
             'items' => $items,
@@ -127,18 +181,22 @@ class ActivityRepository
             return [];
         }
         self::maybeInstall();
-        $values = $wpdb->get_col(
-            self::prepared(
-                $wpdb->prepare(
-                    'SELECT DISTINCT %i FROM %i WHERE %i <> %s ORDER BY %i ASC',
-                    $column,
-                    self::tableName(),
-                    $column,
-                    '',
-                    $column
-                )
+        $sql = $column === 'model'
+            ? $wpdb->prepare(
+                'SELECT DISTINCT model FROM %i WHERE model <> %s ORDER BY model ASC',
+                self::tableName(),
+                ''
             )
-        );
+            : $wpdb->prepare(
+                'SELECT DISTINCT source_name FROM %i WHERE source_name <> %s ORDER BY source_name ASC',
+                self::tableName(),
+                ''
+            );
+        if (!is_string($sql)) {
+            throw new RuntimeException('The activity filter query could not be prepared.');
+        }
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.NotPrepared -- Prepared and validated above.
+        $values = $wpdb->get_col($sql);
 
         return is_array($values)
             ? array_values(array_filter($values, 'is_string'))
@@ -149,7 +207,12 @@ class ActivityRepository
     {
         $wpdb = self::database();
         self::maybeInstall();
-        $wpdb->query(self::prepared($wpdb->prepare('DELETE FROM %i', self::tableName())));
+        $sql = $wpdb->prepare('DELETE FROM %i', self::tableName());
+        if (!is_string($sql)) {
+            throw new RuntimeException('The clear-log query could not be prepared.');
+        }
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.NotPrepared -- Prepared and validated above.
+        $wpdb->query($sql);
     }
 
     public function prune(int $retentionDays, int $maxRecords): void
@@ -157,35 +220,38 @@ class ActivityRepository
         $wpdb = self::database();
         self::maybeInstall();
         $cutoff = gmdate('Y-m-d H:i:s', time() - ($retentionDays * 86400));
-        $wpdb->query(
-            self::prepared(
-                $wpdb->prepare(
-                    'DELETE FROM %i WHERE created_at_gmt < %s',
-                    self::tableName(),
-                    $cutoff
-                )
-            )
+        $deleteExpiredSql = $wpdb->prepare(
+            'DELETE FROM %i WHERE created_at_gmt < %s',
+            self::tableName(),
+            $cutoff
         );
+        if (!is_string($deleteExpiredSql)) {
+            throw new RuntimeException('The activity retention query could not be prepared.');
+        }
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.NotPrepared -- Prepared and validated above.
+        $wpdb->query($deleteExpiredSql);
 
-        $boundary = $wpdb->get_var(
-            self::prepared(
-                $wpdb->prepare(
-                    'SELECT id FROM %i ORDER BY id DESC LIMIT 1 OFFSET %d',
-                    self::tableName(),
-                    max(0, $maxRecords - 1)
-                )
-            )
+        $boundarySql = $wpdb->prepare(
+            'SELECT id FROM %i ORDER BY id DESC LIMIT 1 OFFSET %d',
+            self::tableName(),
+            max(0, $maxRecords - 1)
         );
+        if (!is_string($boundarySql)) {
+            throw new RuntimeException('The activity boundary query could not be prepared.');
+        }
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.NotPrepared -- Prepared and validated above.
+        $boundary = $wpdb->get_var($boundarySql);
         if (is_numeric($boundary)) {
-            $wpdb->query(
-                self::prepared(
-                    $wpdb->prepare(
-                        'DELETE FROM %i WHERE id < %d',
-                        self::tableName(),
-                        (int) $boundary
-                    )
-                )
+            $deleteOverflowSql = $wpdb->prepare(
+                'DELETE FROM %i WHERE id < %d',
+                self::tableName(),
+                (int) $boundary
             );
+            if (!is_string($deleteOverflowSql)) {
+                throw new RuntimeException('The activity size-limit query could not be prepared.');
+            }
+            // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.NotPrepared -- Prepared and validated above.
+            $wpdb->query($deleteOverflowSql);
         }
     }
 
@@ -193,29 +259,6 @@ class ActivityRepository
     {
         $wpdb = self::database();
         return $wpdb->prefix . 'nanogpt_ai_activity';
-    }
-
-    /**
-     * @param array{status?: string, capability?: string, model?: string, source?: string} $filters Filters.
-     */
-    private function whereClause(\wpdb $wpdb, array $filters): string
-    {
-        $clauses = [];
-        foreach (['status', 'capability', 'model'] as $field) {
-            if (!isset($filters[$field]) || $filters[$field] === '') {
-                continue;
-            }
-            $clauses[] = self::prepared(
-                $wpdb->prepare('%i = %s', $field, $filters[$field])
-            );
-        }
-        if (isset($filters['source']) && $filters['source'] !== '') {
-            $clauses[] = self::prepared(
-                $wpdb->prepare('source_name = %s', $filters['source'])
-            );
-        }
-
-        return $clauses ? 'WHERE ' . implode(' AND ', $clauses) : '';
     }
 
     private static function database(): \wpdb
@@ -240,14 +283,5 @@ class ActivityRepository
         }
 
         return $root;
-    }
-
-    private static function prepared(?string $query): string
-    {
-        if ($query === null || $query === '') {
-            throw new RuntimeException('A database query could not be prepared.');
-        }
-
-        return $query;
     }
 }

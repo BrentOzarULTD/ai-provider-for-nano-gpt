@@ -51,6 +51,8 @@ class ActivityPage
     {
         self::authorize('nanogpt_save_activity_settings');
 
+        // The nonce and capability check above authorize these checkbox reads.
+        // phpcs:disable WordPress.Security.NonceVerification.Missing
         update_option(
             ActivitySettings::ENABLED_OPTION,
             isset($_POST['nanogpt_activity_enabled']) ? '1' : '0',
@@ -61,6 +63,7 @@ class ActivityPage
             isset($_POST['nanogpt_activity_content']) ? '1' : '0',
             false
         );
+        // phpcs:enable WordPress.Security.NonceVerification.Missing
         update_option(
             ActivitySettings::RETENTION_DAYS_OPTION,
             (string) self::submittedInteger('nanogpt_activity_retention_days', 7, 1, 90),
@@ -137,8 +140,8 @@ class ActivityPage
         <div class="notice notice-warning inline"><p>
             <?php
             echo esc_html__(
-                'Prompts and responses may contain personal, confidential, or unpublished information. ' .
-                'Content storage is optional and should follow your site privacy policy.',
+                // phpcs:ignore Generic.Files.LineLength.TooLong -- Translation functions require a single literal.
+                'Prompts and responses may contain personal, confidential, or unpublished information. Content storage is optional and should follow your site privacy policy.',
                 'ai-provider-for-nano-gpt'
             );
             ?>
@@ -482,30 +485,43 @@ class ActivityPage
     private static function currentPage(): int
     {
         // Read-only pagination does not need a nonce.
-        // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        // phpcs:disable WordPress.Security.NonceVerification.Recommended
         if (!isset($_GET['activity_page']) || !is_scalar($_GET['activity_page'])) {
             return 1;
         }
 
-        return max(1, absint($_GET['activity_page']));
+        $page = max(1, absint($_GET['activity_page']));
+        // phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+        return $page;
     }
 
     private static function queryValue(string $key): string
     {
+        // Read-only list filters do not need a nonce.
+        // phpcs:disable WordPress.Security.NonceVerification.Recommended
         if (!isset($_GET[$key]) || !is_string($_GET[$key])) {
             return '';
         }
 
-        return sanitize_text_field(wp_unslash($_GET[$key]));
+        $value = sanitize_text_field(wp_unslash($_GET[$key]));
+        // phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+        return $value;
     }
 
     private static function submittedInteger(string $key, int $default, int $minimum, int $maximum): int
     {
+        // saveSettings() verifies the nonce and capability before calling this helper.
+        // phpcs:disable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
         if (!isset($_POST[$key]) || !is_scalar($_POST[$key])) {
             return $default;
         }
 
-        return max($minimum, min($maximum, (int) $_POST[$key]));
+        $value = max($minimum, min($maximum, (int) $_POST[$key]));
+        // phpcs:enable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+
+        return $value;
     }
 
     private static function authorize(string $nonceAction): void

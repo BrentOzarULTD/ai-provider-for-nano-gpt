@@ -360,10 +360,11 @@ class SettingsPage
     private static function currentTab(): string
     {
         // The tab only selects which read-only settings view is rendered.
-        // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        // phpcs:disable WordPress.Security.NonceVerification.Recommended
         $tab = isset($_GET['tab']) && is_string($_GET['tab'])
             ? sanitize_key(wp_unslash($_GET['tab']))
             : 'settings';
+        // phpcs:enable WordPress.Security.NonceVerification.Recommended
 
         return $tab === 'activity' ? 'activity' : 'settings';
     }
@@ -412,8 +413,8 @@ class SettingsPage
         <p>
             <?php
             echo esc_html__(
-                'These choices are tried first by the WordPress AI plugin. ' .
-                'If a selected model is unavailable, its normal fallback list remains available.',
+                // phpcs:ignore Generic.Files.LineLength.TooLong -- Translation functions require a single literal.
+                'These choices are tried first by the WordPress AI plugin. If a selected model is unavailable, its normal fallback list remains available.',
                 'ai-provider-for-nano-gpt'
             );
             ?>
@@ -421,9 +422,8 @@ class SettingsPage
         <p class="description">
             <?php
             echo esc_html__(
-                'Free means Nano-GPT reports the model as included with your subscription; ' .
-                'plan limits may still apply. Schema JSON means the model advertises native ' .
-                'schema-constrained output support.',
+                // phpcs:ignore Generic.Files.LineLength.TooLong -- Translation functions require a single literal.
+                'Free means Nano-GPT reports the model as included with your subscription; plan limits may still apply. Schema JSON means the model advertises native schema-constrained output support.',
                 'ai-provider-for-nano-gpt'
             );
             ?>
@@ -768,6 +768,8 @@ class SettingsPage
 
     private static function submittedModel(string $key): string
     {
+        // saveDefaultModels() verifies the nonce and capability before calling this helper.
+        // phpcs:disable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
         if (!isset($_POST[$key])) {
             return '';
         }
@@ -777,7 +779,10 @@ class SettingsPage
             return '';
         }
 
-        return sanitize_text_field($modelId);
+        $modelId = sanitize_text_field($modelId);
+        // phpcs:enable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+
+        return $modelId;
     }
 
     /**

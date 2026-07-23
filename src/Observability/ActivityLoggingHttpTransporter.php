@@ -46,14 +46,32 @@ class ActivityLoggingHttpTransporter implements HttpTransporterInterface
 
     private function isGenerationRequest(Request $request): bool
     {
-        $host = strtolower((string) parse_url($request->getUri(), PHP_URL_HOST));
-        $path = (string) parse_url($request->getUri(), PHP_URL_PATH);
+        $parts = self::urlParts($request->getUri());
+        $host = isset($parts['host']) && is_string($parts['host']) ? strtolower($parts['host']) : '';
+        $path = isset($parts['path']) && is_string($parts['path']) ? $parts['path'] : '';
         if ($host !== 'nano-gpt.com' || strpos($path, '/api/v1/') === false) {
             return false;
         }
 
         return substr($path, -17) === '/chat/completions'
             || substr($path, -19) === '/images/generations';
+    }
+
+    /**
+     * Uses WordPress URL parsing while retaining Composer-library compatibility.
+     *
+     * @return array<string, mixed> Parsed URL components.
+     */
+    private static function urlParts(string $url): array
+    {
+        if (function_exists('wp_parse_url')) {
+            $parts = wp_parse_url($url);
+        } else {
+            // phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- Standalone Composer fallback.
+            $parts = parse_url($url);
+        }
+
+        return is_array($parts) ? $parts : [];
     }
 
     private function recordSafely(
