@@ -19,6 +19,7 @@ namespace WordPress\NanoGptAiProvider\WordPress {
 
 namespace WordPress\NanoGptAiProvider\Tests\WordPress {
     use PHPUnit\Framework\TestCase;
+    use WordPress\NanoGptAiProvider\Metadata\NanoGptModelMetadata;
     use WordPress\NanoGptAiProvider\WordPress\DefaultModelPreferences;
 
     class DefaultModelPreferencesTest extends TestCase
@@ -67,6 +68,44 @@ namespace WordPress\NanoGptAiProvider\Tests\WordPress {
                     'image' => 'image-test',
                 ],
                 DefaultModelPreferences::selections()
+            );
+        }
+
+        public function testPrioritizesUniqueSavedModelsAndPreservesRemainingOrder(): void
+        {
+            TestOptions::$values = [
+                DefaultModelPreferences::TEXT_OPTION => 'text-test',
+                DefaultModelPreferences::VISION_OPTION => 'text-test',
+                DefaultModelPreferences::IMAGE_OPTION => 'image-test',
+            ];
+            $models = [
+                $this->model('other-test'),
+                $this->model('image-test'),
+                $this->model('text-test'),
+                $this->model('last-test'),
+            ];
+
+            self::assertSame(
+                ['text-test', 'image-test', 'other-test', 'last-test'],
+                array_map(
+                    static fn (NanoGptModelMetadata $model): string => $model->getId(),
+                    DefaultModelPreferences::prioritizeCatalog($models)
+                )
+            );
+        }
+
+        private function model(string $id): NanoGptModelMetadata
+        {
+            return new NanoGptModelMetadata(
+                $id,
+                $id,
+                [],
+                [],
+                false,
+                'Test',
+                null,
+                null,
+                'text'
             );
         }
     }

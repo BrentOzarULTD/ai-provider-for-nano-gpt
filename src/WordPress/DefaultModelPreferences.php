@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace WordPress\NanoGptAiProvider\WordPress;
 
+use WordPress\NanoGptAiProvider\Metadata\NanoGptModelMetadata;
+
 /**
  * Adds saved Nano-GPT models to the WordPress AI plugin's preference lists.
  *
@@ -66,6 +68,40 @@ class DefaultModelPreferences
             'vision' => self::savedModel(self::VISION_OPTION),
             'image' => self::savedModel(self::IMAGE_OPTION),
         ];
+    }
+
+    /**
+     * Moves saved defaults to the beginning of the model catalog.
+     *
+     * Text, vision, and image selection order is preserved, with duplicate
+     * selections shown only once.
+     *
+     * @param list<NanoGptModelMetadata> $models Available models.
+     * @return list<NanoGptModelMetadata> Models with saved defaults first.
+     */
+    public static function prioritizeCatalog(array $models): array
+    {
+        $modelsById = [];
+        foreach ($models as $model) {
+            $modelsById[$model->getId()] = $model;
+        }
+
+        $prioritized = [];
+        foreach (array_unique(array_values(self::selections())) as $modelId) {
+            if ($modelId === '' || !isset($modelsById[$modelId])) {
+                continue;
+            }
+            $prioritized[] = $modelsById[$modelId];
+            unset($modelsById[$modelId]);
+        }
+        foreach ($models as $model) {
+            if (isset($modelsById[$model->getId()])) {
+                $prioritized[] = $model;
+                unset($modelsById[$model->getId()]);
+            }
+        }
+
+        return $prioritized;
     }
 
     /**

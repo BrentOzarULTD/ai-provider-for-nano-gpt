@@ -392,6 +392,7 @@ class SettingsPage
     private static function renderModelPreferences(array $models): void
     {
         $selections = DefaultModelPreferences::selections();
+        $models = DefaultModelPreferences::prioritizeCatalog($models);
         $families = [];
         foreach ($models as $model) {
             $families[$model->getFamily()] = true;
@@ -578,10 +579,12 @@ class SettingsPage
             'image' => $isImage,
         ]));
         $shortName = explode(' — ', $model->getName(), 2)[0];
+        $isPreferred = in_array($model->getId(), array_values($selections), true);
 
         ?>
         <tr
             data-nanogpt-model-row
+            data-preferred="<?php echo $isPreferred ? '1' : '0'; ?>"
             data-model="<?php echo esc_attr(strtolower($shortName . ' ' . $model->getId())); ?>"
             data-free="<?php echo $model->isSubscriptionIncluded() ? '1' : '0'; ?>"
             data-context="<?php echo esc_attr((string) ($context ?? 0)); ?>"

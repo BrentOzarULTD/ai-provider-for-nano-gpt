@@ -65,6 +65,13 @@
 			}
 
 			rows.sort( ( first, second ) => {
+				const preferredComparison =
+					Number( second.dataset.preferred || 0 ) -
+					Number( first.dataset.preferred || 0 );
+				if ( preferredComparison !== 0 ) {
+					return preferredComparison;
+				}
+
 				const firstValue = first.dataset[ key ] || '';
 				const secondValue = second.dataset[ key ] || '';
 				let comparison;
