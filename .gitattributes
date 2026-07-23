@@ -1,5 +1,5 @@
 # Exclude WordPress plugin bootstrap and autoloader from Composer archive
-plugin.php export-ignore
+/ai-provider-for-nano-gpt.php export-ignore
 /src/autoload.php export-ignore
 
 # Exclude development and CI files from Composer archive
@@ -9,3 +9,7 @@ plugin.php export-ignore
 /.distignore export-ignore
 /phpcs.xml.dist export-ignore
 /phpstan.neon.dist export-ignore
+/composer.lock export-ignore
+/phpunit.xml.dist export-ignore
+/scripts export-ignore
+/tests export-ignore

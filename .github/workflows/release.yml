@@ -1,0 +1,45 @@
+name: Build GitHub release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout tagged source
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@20529878ed81ef8e78ddf08b480401e6101a850f # v2
+        with:
+          php-version: '7.4'
+          coverage: none
+          tools: composer:v2
+
+      - name: Install development dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Run quality checks
+        run: composer lint
+
+      - name: Build provider-only ZIP
+        run: composer build-release -- "${GITHUB_REF_NAME}"
+
+      - name: Create GitHub release and upload files
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          gh release create "${GITHUB_REF_NAME}"
+          dist/ai-provider-for-nano-gpt-*.zip
+          dist/ai-provider-for-nano-gpt-*.zip.sha256
+          --verify-tag
+          --generate-notes
+          --title "AI Provider for Nano-GPT ${GITHUB_REF_NAME#v}"

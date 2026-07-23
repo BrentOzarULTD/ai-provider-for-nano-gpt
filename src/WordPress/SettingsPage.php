@@ -46,8 +46,8 @@ class SettingsPage
     public static function addSettingsPage(): void
     {
         add_options_page(
-            __('Nano-GPT', 'ai-provider-for-nanogpt'),
-            __('Nano-GPT', 'ai-provider-for-nanogpt'),
+            __('Nano-GPT', 'ai-provider-for-nano-gpt'),
+            __('Nano-GPT', 'ai-provider-for-nano-gpt'),
             'manage_options',
             self::PAGE_SLUG,
             [self::class, 'render']
@@ -77,7 +77,7 @@ class SettingsPage
 
         $connector['description'] = __(
             'Text and image generation through hundreds of AI models.',
-            'ai-provider-for-nanogpt'
+            'ai-provider-for-nano-gpt'
         );
         $plugin = isset($connector['plugin']) && is_array($connector['plugin'])
             ? $connector['plugin']
@@ -98,7 +98,7 @@ class SettingsPage
         array_unshift(
             $links,
             '<a href="' . esc_url(self::settingsUrl()) . '">' .
-                esc_html__('Settings', 'ai-provider-for-nanogpt') .
+                esc_html__('Settings', 'ai-provider-for-nano-gpt') .
             '</a>'
         );
 
@@ -111,7 +111,7 @@ class SettingsPage
     public static function refreshBalance(): void
     {
         if (!current_user_can('manage_options')) {
-            wp_die(esc_html__('You are not allowed to manage these settings.', 'ai-provider-for-nanogpt'));
+            wp_die(esc_html__('You are not allowed to manage these settings.', 'ai-provider-for-nano-gpt'));
         }
 
         check_admin_referer('nanogpt_refresh_balance');
@@ -146,50 +146,50 @@ class SettingsPage
 
         ?>
         <div class="wrap">
-            <h1><?php echo esc_html__('Nano-GPT', 'ai-provider-for-nanogpt'); ?></h1>
+            <h1><?php echo esc_html__('Nano-GPT', 'ai-provider-for-nano-gpt'); ?></h1>
             <p>
                 <?php
                 echo esc_html__(
                     'Use Nano-GPT models through the WordPress AI Client.',
-                    'ai-provider-for-nanogpt'
+                    'ai-provider-for-nano-gpt'
                 );
                 ?>
             </p>
 
-            <h2><?php echo esc_html__('Connection', 'ai-provider-for-nanogpt'); ?></h2>
+            <h2><?php echo esc_html__('Connection', 'ai-provider-for-nano-gpt'); ?></h2>
             <?php if ($apiKey === '') : ?>
                 <div class="notice notice-warning inline"><p>
-                    <?php echo esc_html__('No Nano-GPT API key is configured.', 'ai-provider-for-nanogpt'); ?>
+                    <?php echo esc_html__('No Nano-GPT API key is configured.', 'ai-provider-for-nano-gpt'); ?>
                 </p></div>
                 <?php if (self::connectorsAvailable()) : ?>
                     <p><a
                         class="button button-primary"
                         href="<?php echo esc_url(admin_url('options-connectors.php')); ?>"
                     >
-                        <?php echo esc_html__('Configure API key in Connectors', 'ai-provider-for-nanogpt'); ?>
+                        <?php echo esc_html__('Configure API key in Connectors', 'ai-provider-for-nano-gpt'); ?>
                     </a></p>
                 <?php else : ?>
                     <p>
                         <?php
                         echo esc_html__(
                             'Set NANOGPT_API_KEY as an environment variable or PHP constant.',
-                            'ai-provider-for-nanogpt'
+                            'ai-provider-for-nano-gpt'
                         );
                         ?>
                     </p>
                 <?php endif; ?>
             <?php else : ?>
                 <p><span class="dashicons dashicons-yes-alt" aria-hidden="true"></span>
-                    <?php echo esc_html__('API key configured', 'ai-provider-for-nanogpt'); ?>
+                    <?php echo esc_html__('API key configured', 'ai-provider-for-nano-gpt'); ?>
                 </p>
             <?php endif; ?>
 
-            <h2><?php echo esc_html__('Available balance', 'ai-provider-for-nanogpt'); ?></h2>
+            <h2><?php echo esc_html__('Available balance', 'ai-provider-for-nano-gpt'); ?></h2>
             <?php if ($balance instanceof NanoGptBalance) : ?>
                 <table class="widefat striped" style="max-width: 520px">
                     <tbody>
                         <tr>
-                            <th scope="row"><?php echo esc_html__('USD balance', 'ai-provider-for-nanogpt'); ?></th>
+                            <th scope="row"><?php echo esc_html__('USD balance', 'ai-provider-for-nano-gpt'); ?></th>
                             <td>
                                 <strong>
                                     $<?php echo esc_html(self::formatBalance($balance->getUsdBalance(), 4)); ?>
@@ -198,40 +198,40 @@ class SettingsPage
                         </tr>
                         <tr>
                             <th scope="row">
-                                <?php echo esc_html__('Nano (XNO) balance', 'ai-provider-for-nanogpt'); ?>
+                                <?php echo esc_html__('Nano (XNO) balance', 'ai-provider-for-nano-gpt'); ?>
                             </th>
                             <td><?php echo esc_html(self::formatBalance($balance->getNanoBalance(), 6)); ?> XNO</td>
                         </tr>
                     </tbody>
                 </table>
                 <p class="description">
-                    <?php echo esc_html__('Balance is cached for five minutes.', 'ai-provider-for-nanogpt'); ?>
+                    <?php echo esc_html__('Balance is cached for five minutes.', 'ai-provider-for-nano-gpt'); ?>
                 </p>
                 <p><a class="button" href="<?php echo esc_url(self::refreshUrl()); ?>">
-                    <?php echo esc_html__('Refresh balance', 'ai-provider-for-nanogpt'); ?>
+                    <?php echo esc_html__('Refresh balance', 'ai-provider-for-nano-gpt'); ?>
                 </a></p>
             <?php elseif ($error !== '') : ?>
                 <div class="notice notice-error inline"><p><?php echo esc_html($error); ?></p></div>
                 <p><a class="button" href="<?php echo esc_url(self::refreshUrl()); ?>">
-                    <?php echo esc_html__('Try again', 'ai-provider-for-nanogpt'); ?>
+                    <?php echo esc_html__('Try again', 'ai-provider-for-nano-gpt'); ?>
                 </a></p>
             <?php else : ?>
                 <p>
                     <?php
                     echo esc_html__(
                         'Configure an API key to view the account balance.',
-                        'ai-provider-for-nanogpt'
+                        'ai-provider-for-nano-gpt'
                     );
                     ?>
                 </p>
             <?php endif; ?>
 
-            <h2><?php echo esc_html__('Model labels', 'ai-provider-for-nanogpt'); ?></h2>
+            <h2><?php echo esc_html__('Model labels', 'ai-provider-for-nano-gpt'); ?></h2>
             <p>
                 <?php
                 echo esc_html__(
                     'Model choices show billing, family, release month, and context size.',
-                    'ai-provider-for-nanogpt'
+                    'ai-provider-for-nano-gpt'
                 );
                 ?>
             </p>

@@ -27,7 +27,7 @@ The provider ID used by the AI Client is `nanogpt`.
 
 ## Composer installation
 
-Until the fork is published to Packagist, add this repository as a VCS repository in the consuming project's `composer.json`, then require `brentozar/ai-provider-for-nanogpt`. The package installs the PHP AI Client as a dependency.
+Until the fork is published to Packagist, add this repository as a VCS repository in the consuming project's `composer.json`, then require `brentozar/ai-provider-for-nano-gpt`. The package installs the PHP AI Client as a dependency.
 
 Register the provider in a standalone application:
 
@@ -99,6 +99,17 @@ composer lint
 ```
 
 `composer lint` runs PHPCS, PHPStan, and PHPUnit. Tests use fixtures and do not call Nano-GPT or consume balance.
+
+## Building a WordPress release
+
+After the quality checks pass, build the provider-only WordPress plugin ZIP:
+
+```bash
+composer lint
+composer build-release
+```
+
+The build reads the version from the plugin header and writes the ZIP and its SHA-256 checksum to `dist/`. The ZIP contains only the plugin bootstrap, runtime source, license, and WordPress readme; it does not bundle Composer dependencies or development files.
 
 ## License
 

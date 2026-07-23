@@ -1,5 +1,5 @@
 {
-    "name": "brentozar/ai-provider-for-nanogpt",
+    "name": "brentozar/ai-provider-for-nano-gpt",
     "description": "Nano-GPT text and image provider for the WordPress AI Client. Works as both a Composer package and a WordPress plugin.",
     "license": "GPL-2.0-or-later",
     "keywords": [
@@ -72,6 +72,7 @@
         "phpcbf": "phpcbf",
         "phpcs": "phpcs",
         "phpstan": "phpstan analyze --memory-limit=1G --debug",
-        "test": "phpunit"
+        "test": "phpunit",
+        "build-release": "bash scripts/build-release.sh"
     }
 }

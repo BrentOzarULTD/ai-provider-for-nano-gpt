@@ -4,7 +4,7 @@
 
     <!-- Scan these files -->
     <file>src</file>
-    <file>ai-provider-for-nanogpt.php</file>
+    <file>ai-provider-for-nano-gpt.php</file>
     <file>tests</file>
 
     <!-- Ignore vendor directory -->
@@ -24,7 +24,7 @@
 
     <!-- WordPress plugin bootstrap files intentionally have side effects -->
     <rule ref="PSR1.Files.SideEffects.FoundWithSymbols">
-        <exclude-pattern>ai-provider-for-nanogpt.php</exclude-pattern>
+        <exclude-pattern>ai-provider-for-nano-gpt.php</exclude-pattern>
     </rule>
 
     <!-- Check PHP 7.4 compatibility -->
