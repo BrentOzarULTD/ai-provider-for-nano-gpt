@@ -110,6 +110,18 @@ composer lint
 
 `composer lint` runs PHPCS, PHPStan, and PHPUnit. Tests use fixtures and do not call Nano-GPT or consume balance.
 
+Pull requests targeting `dev` run Composer validation and advisory scanning,
+coding standards, maximum-level static analysis, PHPUnit across every supported
+PHP generation, coverage reporting, release-package validation, dependency
+review, and WordPress Plugin Check. The required `PR gate` check summarizes
+those deterministic results.
+
+The `Nano-GPT live integration` workflow runs weekly and can also be dispatched
+manually. Its encrypted `NANOGPT_API_KEY` secret is unavailable to pull-request
+workflows. It verifies authenticated model discovery, balance response shape,
+a tightly limited subscription text generation, and one low-cost image
+generation without logging account data or generated content.
+
 ## Building a WordPress release
 
 After the quality checks pass, build the provider-only WordPress plugin ZIP:

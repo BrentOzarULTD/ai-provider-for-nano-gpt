@@ -2,32 +2,256 @@ name: Quality checks
 
 on:
   pull_request:
+    branches:
+      - dev
   push:
     branches:
-      - main
-      - trunk
+      - dev
+  merge_group:
+  workflow_dispatch:
+
+concurrency:
+  group: quality-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
 
-jobs:
-  lint-and-test:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
+env:
+  COMPOSER_NO_INTERACTION: 1
 
+jobs:
+  composer:
+    name: Composer validation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
 
       - name: Set up PHP
-        uses: shivammathur/setup-php@20529878ed81ef8e78ddf08b480401e6101a850f # v2
+        uses: shivammathur/setup-php@bf6b4fbd49ca58e4608c9c89fba0b8d90bd2a39f # v2.35.5
+        with:
+          php-version: '7.4'
+          coverage: none
+          tools: composer:v2
+
+      - name: Validate Composer metadata
+        run: composer validate --strict
+
+      - name: Check locked dependencies for advisories
+        run: composer audit --locked --no-interaction
+
+  coding-standards:
+    name: Coding standards
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@bf6b4fbd49ca58e4608c9c89fba0b8d90bd2a39f # v2.35.5
         with:
           php-version: '7.4'
           coverage: none
           tools: composer:v2
 
       - name: Install dependencies
-        run: composer install --no-interaction --prefer-dist
+        run: composer install --prefer-dist --no-progress
 
-      - name: Run coding standards, static analysis, and tests
-        run: composer lint
+      - name: Run PHPCS and PHP compatibility checks
+        run: composer phpcs
+
+  static-analysis:
+    name: Static analysis
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@bf6b4fbd49ca58e4608c9c89fba0b8d90bd2a39f # v2.35.5
+        with:
+          php-version: '7.4'
+          coverage: none
+          tools: composer:v2
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress
+
+      - name: Run PHPStan
+        run: composer phpstan
+
+  unit-tests:
+    name: Unit tests (PHP ${{ matrix.php }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        php:
+          - '7.4'
+          - '8.1'
+          - '8.3'
+          - '8.5'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@bf6b4fbd49ca58e4608c9c89fba0b8d90bd2a39f # v2.35.5
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+          tools: composer:v2
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress
+
+      - name: Run PHPUnit
+        run: composer test
+
+  coverage:
+    name: Test coverage
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@bf6b4fbd49ca58e4608c9c89fba0b8d90bd2a39f # v2.35.5
+        with:
+          php-version: '8.3'
+          coverage: pcov
+          tools: composer:v2
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress
+
+      - name: Generate coverage report
+        run: |
+          mkdir -p build
+          vendor/bin/phpunit --coverage-clover build/coverage.xml --coverage-text
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: phpunit-coverage
+          path: build/coverage.xml
+          if-no-files-found: error
+          retention-days: 14
+
+  package:
+    name: Release package
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@bf6b4fbd49ca58e4608c9c89fba0b8d90bd2a39f # v2.35.5
+        with:
+          php-version: '7.4'
+          coverage: none
+          tools: composer:v2
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress
+
+      - name: Build provider-only ZIP
+        run: composer build-release
+
+      - name: Verify archive integrity
+        run: unzip -t dist/modeltrestle-ai-connector-for-nano-gpt-*.zip
+
+      - name: Upload release package
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: modeltrestle-plugin
+          path: |
+            dist/modeltrestle-ai-connector-for-nano-gpt-*.zip
+            dist/modeltrestle-ai-connector-for-nano-gpt-*.zip.sha256
+          if-no-files-found: error
+          retention-days: 14
+
+  plugin-check:
+    name: WordPress Plugin Check
+    needs:
+      - package
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+
+      - name: Download release package
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+        with:
+          name: modeltrestle-plugin
+          path: dist
+
+      - name: Extract release package
+        run: |
+          mkdir -p .plugin-check
+          unzip -q dist/modeltrestle-ai-connector-for-nano-gpt-*.zip -d .plugin-check
+
+      - name: Run WordPress Plugin Check
+        uses: WordPress/plugin-check-action@18573eb38f13543484a1f095672dae3849a4fbb0 # v1.1.6
+        with:
+          build-dir: .plugin-check/modeltrestle-ai-connector-for-nano-gpt
+
+  dependency-review:
+    name: Dependency review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+
+      - name: Review dependency changes
+        uses: actions/dependency-review-action@3c4e3dcb1aa7874d2c16be7d79418e9b7efd6261 # v4.8.2
+
+  gate:
+    name: PR gate
+    if: always()
+    needs:
+      - composer
+      - coding-standards
+      - static-analysis
+      - unit-tests
+      - coverage
+      - package
+      - plugin-check
+      - dependency-review
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    env:
+      COMPOSER_RESULT: ${{ needs.composer.result }}
+      CODING_STANDARDS_RESULT: ${{ needs.coding-standards.result }}
+      STATIC_ANALYSIS_RESULT: ${{ needs.static-analysis.result }}
+      UNIT_TESTS_RESULT: ${{ needs.unit-tests.result }}
+      COVERAGE_RESULT: ${{ needs.coverage.result }}
+      PACKAGE_RESULT: ${{ needs.package.result }}
+      PLUGIN_CHECK_RESULT: ${{ needs.plugin-check.result }}
+      DEPENDENCY_REVIEW_RESULT: ${{ needs.dependency-review.result }}
+    steps:
+      - name: Require every applicable check
+        run: |
+          test "${COMPOSER_RESULT}" = "success"
+          test "${CODING_STANDARDS_RESULT}" = "success"
+          test "${STATIC_ANALYSIS_RESULT}" = "success"
+          test "${UNIT_TESTS_RESULT}" = "success"
+          test "${COVERAGE_RESULT}" = "success"
+          test "${PACKAGE_RESULT}" = "success"
+          test "${PLUGIN_CHECK_RESULT}" = "success"
+          if [ "${GITHUB_EVENT_NAME}" = "pull_request" ]; then
+            test "${DEPENDENCY_REVIEW_RESULT}" = "success"
+          else
+            test "${DEPENDENCY_REVIEW_RESULT}" = "skipped"
+          fi

@@ -5,6 +5,11 @@
          colors="true"
          failOnRisky="true"
          failOnWarning="true">
+    <coverage>
+        <include>
+            <directory suffix=".php">src</directory>
+        </include>
+    </coverage>
     <testsuites>
         <testsuite name="Nano-GPT provider">
             <directory>tests</directory>

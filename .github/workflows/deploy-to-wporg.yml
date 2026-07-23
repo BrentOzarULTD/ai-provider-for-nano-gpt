@@ -16,4 +16,4 @@ jobs:
         env:
           SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
           SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
-          SLUG: ai-provider-for-nano-gpt
+          SLUG: modeltrestle-ai-connector-for-nano-gpt
