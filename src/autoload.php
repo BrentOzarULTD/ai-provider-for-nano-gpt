@@ -10,6 +10,11 @@
 
 declare(strict_types=1);
 
+// This fallback autoloader is only needed inside WordPress or CLI tooling.
+if (!defined('ABSPATH') && PHP_SAPI !== 'cli') {
+    exit;
+}
+
 spl_autoload_register(static function (string $class): void {
     $prefix = 'WordPress\\NanoGptAiProvider\\';
     $baseDir = __DIR__ . '/';
