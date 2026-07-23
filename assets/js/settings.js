@@ -40,8 +40,8 @@
 					( ! values.family ||
 						( row.dataset.family || '' ).toLowerCase() ===
 							values.family ) &&
-					( ! values.release ||
-						row.dataset.release === values.release ) &&
+					( values.structured === '' ||
+						row.dataset.structured === values.structured ) &&
 					( ! values.category ||
 						categories.includes( values.category ) );
 
@@ -76,7 +76,11 @@
 				const secondValue = second.dataset[ key ] || '';
 				let comparison;
 
-				if ( key === 'free' || key === 'context' ) {
+				if (
+					key === 'free' ||
+					key === 'context' ||
+					key === 'structured'
+				) {
 					comparison = Number( firstValue ) - Number( secondValue );
 				} else {
 					comparison = firstValue.localeCompare( secondValue, undefined, {

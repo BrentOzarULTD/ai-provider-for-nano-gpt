@@ -414,7 +414,8 @@ class SettingsPage
             <?php
             echo esc_html__(
                 'Free means Nano-GPT reports the model as included with your subscription; ' .
-                'plan limits may still apply.',
+                'plan limits may still apply. Schema JSON means the model advertises native ' .
+                'schema-constrained output support.',
                 'ai-provider-for-nano-gpt'
             );
             ?>
@@ -464,8 +465,14 @@ class SettingsPage
                     </select>
                 </label>
                 <label>
-                    <span><?php echo esc_html__('Release month', 'ai-provider-for-nano-gpt'); ?></span>
-                    <input type="month" data-nanogpt-filter="release">
+                    <span><?php echo esc_html__('Schema JSON', 'ai-provider-for-nano-gpt'); ?></span>
+                    <select data-nanogpt-filter="structured">
+                        <option value=""><?php echo esc_html__('All', 'ai-provider-for-nano-gpt'); ?></option>
+                        <option value="1"><?php echo esc_html__('Supported', 'ai-provider-for-nano-gpt'); ?></option>
+                        <option value="0">
+                            <?php echo esc_html__('Not supported', 'ai-provider-for-nano-gpt'); ?>
+                        </option>
+                    </select>
                 </label>
                 <label>
                     <span><?php echo esc_html__('Type', 'ai-provider-for-nano-gpt'); ?></span>
@@ -506,6 +513,12 @@ class SettingsPage
                             <?php self::renderSortableHeading('family', __('Family', 'ai-provider-for-nano-gpt')); ?>
                             <?php
                             self::renderSortableHeading(
+                                'structured',
+                                __('Schema JSON', 'ai-provider-for-nano-gpt')
+                            );
+                            ?>
+                            <?php
+                            self::renderSortableHeading(
                                 'release',
                                 __('Release date', 'ai-provider-for-nano-gpt')
                             );
@@ -520,7 +533,7 @@ class SettingsPage
                             <th scope="row">
                                 <?php echo esc_html__('Use WordPress AI defaults', 'ai-provider-for-nano-gpt'); ?>
                             </th>
-                            <td>—</td><td>—</td><td>—</td><td>—</td>
+                            <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
                         </tr>
                         <?php foreach ($models as $model) : ?>
                             <?php self::renderModelRow($model, $selections); ?>
@@ -580,6 +593,7 @@ class SettingsPage
         ]));
         $shortName = explode(' — ', $model->getName(), 2)[0];
         $isPreferred = in_array($model->getId(), array_values($selections), true);
+        $supportsStructuredOutput = self::supportsStructuredOutput($model);
 
         ?>
         <tr
@@ -589,6 +603,7 @@ class SettingsPage
             data-free="<?php echo $model->isSubscriptionIncluded() ? '1' : '0'; ?>"
             data-context="<?php echo esc_attr((string) ($context ?? 0)); ?>"
             data-family="<?php echo esc_attr($model->getFamily()); ?>"
+            data-structured="<?php echo $supportsStructuredOutput ? '1' : '0'; ?>"
             data-release="<?php echo esc_attr($releaseMonth); ?>"
             data-category="<?php echo esc_attr(implode(' ', $categories)); ?>"
         >
@@ -630,6 +645,15 @@ class SettingsPage
             </td>
             <td><?php echo esc_html($context === null ? '—' : self::formatTokenCount($context)); ?></td>
             <td><?php echo esc_html($model->getFamily()); ?></td>
+            <td>
+                <?php
+                echo esc_html(
+                    $supportsStructuredOutput
+                        ? __('Yes', 'ai-provider-for-nano-gpt')
+                        : __('No', 'ai-provider-for-nano-gpt')
+                );
+                ?>
+            </td>
             <td><?php echo esc_html($releaseMonth === '' ? '—' : $releaseMonth); ?></td>
         </tr>
         <?php
@@ -717,6 +741,17 @@ class SettingsPage
                         return true;
                     }
                 }
+            }
+        }
+
+        return false;
+    }
+
+    private static function supportsStructuredOutput(NanoGptModelMetadata $model): bool
+    {
+        foreach ($model->getSupportedOptions() as $option) {
+            if ($option->getName()->isOutputSchema()) {
+                return true;
             }
         }
 
