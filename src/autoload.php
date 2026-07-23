@@ -1,7 +1,7 @@
 <?php
 
 /**
- * PSR-4 autoloader for the AI Provider for Nano-GPT package.
+ * PSR-4 autoloader for the ModelTrestle AI Connector for Nano-GPT package.
  *
  * @since 1.0.0
  *

@@ -114,13 +114,13 @@ class ActivityPage
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         if (isset($_GET['activity-updated'])) {
             echo '<div class="notice notice-success is-dismissible"><p>'
-                . esc_html__('Activity settings saved.', 'ai-provider-for-nano-gpt')
+                . esc_html__('Activity settings saved.', 'modeltrestle-ai-connector-for-nano-gpt')
                 . '</p></div>';
         }
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         if (isset($_GET['activity-cleared'])) {
             echo '<div class="notice notice-success is-dismissible"><p>'
-                . esc_html__('Activity log cleared.', 'ai-provider-for-nano-gpt')
+                . esc_html__('Activity log cleared.', 'modeltrestle-ai-connector-for-nano-gpt')
                 . '</p></div>';
         }
     }
@@ -128,12 +128,12 @@ class ActivityPage
     private static function renderSettings(): void
     {
         ?>
-        <h2><?php echo esc_html__('Activity logging', 'ai-provider-for-nano-gpt'); ?></h2>
+        <h2><?php echo esc_html__('Activity logging', 'modeltrestle-ai-connector-for-nano-gpt'); ?></h2>
         <p>
             <?php
             echo esc_html__(
                 'Keep a bounded local history of Nano-GPT generation calls for troubleshooting.',
-                'ai-provider-for-nano-gpt'
+                'modeltrestle-ai-connector-for-nano-gpt'
             );
             ?>
         </p>
@@ -142,7 +142,7 @@ class ActivityPage
             echo esc_html__(
                 // phpcs:ignore Generic.Files.LineLength.TooLong -- Translation functions require a single literal.
                 'Prompts and responses may contain personal, confidential, or unpublished information. Content storage is optional and should follow your site privacy policy.',
-                'ai-provider-for-nano-gpt'
+                'modeltrestle-ai-connector-for-nano-gpt'
             );
             ?>
         </p></div>
@@ -152,7 +152,7 @@ class ActivityPage
             <table class="form-table" role="presentation">
                 <tbody>
                     <tr>
-                        <th scope="row"><?php echo esc_html__('Logging', 'ai-provider-for-nano-gpt'); ?></th>
+                        <th scope="row"><?php echo esc_html__('Logging', 'modeltrestle-ai-connector-for-nano-gpt'); ?></th>
                         <td><label>
                             <input
                                 type="checkbox"
@@ -160,11 +160,11 @@ class ActivityPage
                                 value="1"
                                 <?php checked(ActivitySettings::isEnabled()); ?>
                             >
-                            <?php echo esc_html__('Record Nano-GPT generation activity', 'ai-provider-for-nano-gpt'); ?>
+                            <?php echo esc_html__('Record Nano-GPT generation activity', 'modeltrestle-ai-connector-for-nano-gpt'); ?>
                         </label></td>
                     </tr>
                     <tr>
-                        <th scope="row"><?php echo esc_html__('Content', 'ai-provider-for-nano-gpt'); ?></th>
+                        <th scope="row"><?php echo esc_html__('Content', 'modeltrestle-ai-connector-for-nano-gpt'); ?></th>
                         <td>
                             <label>
                                 <input
@@ -176,7 +176,7 @@ class ActivityPage
                                 <?php
                                 echo esc_html__(
                                     'Store prompts, responses, and generation settings',
-                                    'ai-provider-for-nano-gpt'
+                                    'modeltrestle-ai-connector-for-nano-gpt'
                                 );
                                 ?>
                             </label>
@@ -184,7 +184,7 @@ class ActivityPage
                                 <?php
                                 echo esc_html__(
                                     'API credentials and inline image data are never stored.',
-                                    'ai-provider-for-nano-gpt'
+                                    'modeltrestle-ai-connector-for-nano-gpt'
                                 );
                                 ?>
                             </p>
@@ -193,7 +193,7 @@ class ActivityPage
                     <tr>
                         <th scope="row">
                             <label for="nanogpt-activity-days">
-                                <?php echo esc_html__('Retention', 'ai-provider-for-nano-gpt'); ?>
+                                <?php echo esc_html__('Retention', 'modeltrestle-ai-connector-for-nano-gpt'); ?>
                             </label>
                         </th>
                         <td>
@@ -206,7 +206,7 @@ class ActivityPage
                                 max="90"
                                 value="<?php echo esc_attr((string) ActivitySettings::retentionDays()); ?>"
                             >
-                            <?php echo esc_html__('days, up to', 'ai-provider-for-nano-gpt'); ?>
+                            <?php echo esc_html__('days, up to', 'modeltrestle-ai-connector-for-nano-gpt'); ?>
                             <input
                                 class="small-text"
                                 type="number"
@@ -215,12 +215,12 @@ class ActivityPage
                                 max="5000"
                                 value="<?php echo esc_attr((string) ActivitySettings::maxRecords()); ?>"
                             >
-                            <?php echo esc_html__('calls', 'ai-provider-for-nano-gpt'); ?>
+                            <?php echo esc_html__('calls', 'modeltrestle-ai-connector-for-nano-gpt'); ?>
                         </td>
                     </tr>
                 </tbody>
             </table>
-            <?php submit_button(__('Save activity settings', 'ai-provider-for-nano-gpt')); ?>
+            <?php submit_button(__('Save activity settings', 'modeltrestle-ai-connector-for-nano-gpt')); ?>
         </form>
         <?php
     }
@@ -234,46 +234,46 @@ class ActivityPage
     {
         ?>
         <hr>
-        <h2><?php echo esc_html__('Recent calls', 'ai-provider-for-nano-gpt'); ?></h2>
+        <h2><?php echo esc_html__('Recent calls', 'modeltrestle-ai-connector-for-nano-gpt'); ?></h2>
         <?php if (!ActivitySettings::isEnabled()) : ?>
             <p class="description">
-                <?php echo esc_html__('Logging is currently disabled.', 'ai-provider-for-nano-gpt'); ?>
+                <?php echo esc_html__('Logging is currently disabled.', 'modeltrestle-ai-connector-for-nano-gpt'); ?>
             </p>
         <?php endif; ?>
         <form method="get" class="nanogpt-activity-filters">
             <input type="hidden" name="page" value="<?php echo esc_attr(self::PAGE_SLUG); ?>">
             <input type="hidden" name="tab" value="activity">
-            <?php self::filterSelect('activity_status', __('Status', 'ai-provider-for-nano-gpt'), [
-                '' => __('All statuses', 'ai-provider-for-nano-gpt'),
-                'success' => __('Success', 'ai-provider-for-nano-gpt'),
-                'error' => __('Error', 'ai-provider-for-nano-gpt'),
+            <?php self::filterSelect('activity_status', __('Status', 'modeltrestle-ai-connector-for-nano-gpt'), [
+                '' => __('All statuses', 'modeltrestle-ai-connector-for-nano-gpt'),
+                'success' => __('Success', 'modeltrestle-ai-connector-for-nano-gpt'),
+                'error' => __('Error', 'modeltrestle-ai-connector-for-nano-gpt'),
             ], $filters['status']); ?>
-            <?php self::filterSelect('activity_capability', __('Type', 'ai-provider-for-nano-gpt'), [
-                '' => __('All types', 'ai-provider-for-nano-gpt'),
-                'text' => __('Text', 'ai-provider-for-nano-gpt'),
-                'image' => __('Image', 'ai-provider-for-nano-gpt'),
+            <?php self::filterSelect('activity_capability', __('Type', 'modeltrestle-ai-connector-for-nano-gpt'), [
+                '' => __('All types', 'modeltrestle-ai-connector-for-nano-gpt'),
+                'text' => __('Text', 'modeltrestle-ai-connector-for-nano-gpt'),
+                'image' => __('Image', 'modeltrestle-ai-connector-for-nano-gpt'),
             ], $filters['capability']); ?>
             <?php self::filterSelect(
                 'activity_model',
-                __('Model', 'ai-provider-for-nano-gpt'),
+                __('Model', 'modeltrestle-ai-connector-for-nano-gpt'),
                 array_combine(array_merge([''], $models), array_merge([
-                    __('All models', 'ai-provider-for-nano-gpt'),
+                    __('All models', 'modeltrestle-ai-connector-for-nano-gpt'),
                 ], $models)),
                 $filters['model']
             ); ?>
             <?php self::filterSelect(
                 'activity_source',
-                __('Source', 'ai-provider-for-nano-gpt'),
+                __('Source', 'modeltrestle-ai-connector-for-nano-gpt'),
                 array_combine(array_merge([''], $sources), array_merge([
-                    __('All sources', 'ai-provider-for-nano-gpt'),
+                    __('All sources', 'modeltrestle-ai-connector-for-nano-gpt'),
                 ], $sources)),
                 $filters['source']
             ); ?>
             <button class="button" type="submit">
-                <?php echo esc_html__('Filter', 'ai-provider-for-nano-gpt'); ?>
+                <?php echo esc_html__('Filter', 'modeltrestle-ai-connector-for-nano-gpt'); ?>
             </button>
             <a class="button" href="<?php echo esc_url(self::url()); ?>">
-                <?php echo esc_html__('Reset', 'ai-provider-for-nano-gpt'); ?>
+                <?php echo esc_html__('Reset', 'modeltrestle-ai-connector-for-nano-gpt'); ?>
             </a>
         </form>
         <?php
@@ -288,19 +288,19 @@ class ActivityPage
         <div class="nanogpt-activity-table-wrap">
             <table class="widefat striped nanogpt-activity-table">
                 <thead><tr>
-                    <th><?php echo esc_html__('Time', 'ai-provider-for-nano-gpt'); ?></th>
-                    <th><?php echo esc_html__('Source', 'ai-provider-for-nano-gpt'); ?></th>
-                    <th><?php echo esc_html__('Type', 'ai-provider-for-nano-gpt'); ?></th>
-                    <th><?php echo esc_html__('Model', 'ai-provider-for-nano-gpt'); ?></th>
-                    <th><?php echo esc_html__('Status', 'ai-provider-for-nano-gpt'); ?></th>
-                    <th><?php echo esc_html__('Duration', 'ai-provider-for-nano-gpt'); ?></th>
-                    <th><?php echo esc_html__('Prompt', 'ai-provider-for-nano-gpt'); ?></th>
-                    <th><?php echo esc_html__('Details', 'ai-provider-for-nano-gpt'); ?></th>
+                    <th><?php echo esc_html__('Time', 'modeltrestle-ai-connector-for-nano-gpt'); ?></th>
+                    <th><?php echo esc_html__('Source', 'modeltrestle-ai-connector-for-nano-gpt'); ?></th>
+                    <th><?php echo esc_html__('Type', 'modeltrestle-ai-connector-for-nano-gpt'); ?></th>
+                    <th><?php echo esc_html__('Model', 'modeltrestle-ai-connector-for-nano-gpt'); ?></th>
+                    <th><?php echo esc_html__('Status', 'modeltrestle-ai-connector-for-nano-gpt'); ?></th>
+                    <th><?php echo esc_html__('Duration', 'modeltrestle-ai-connector-for-nano-gpt'); ?></th>
+                    <th><?php echo esc_html__('Prompt', 'modeltrestle-ai-connector-for-nano-gpt'); ?></th>
+                    <th><?php echo esc_html__('Details', 'modeltrestle-ai-connector-for-nano-gpt'); ?></th>
                 </tr></thead>
                 <tbody>
                     <?php if (!$items) : ?>
                         <tr><td colspan="8">
-                            <?php echo esc_html__('No matching Nano-GPT calls.', 'ai-provider-for-nano-gpt'); ?>
+                            <?php echo esc_html__('No matching Nano-GPT calls.', 'modeltrestle-ai-connector-for-nano-gpt'); ?>
                         </td></tr>
                     <?php endif; ?>
                     <?php foreach ($items as $item) : ?>
@@ -332,7 +332,7 @@ class ActivityPage
             <td class="nanogpt-activity-preview"><?php echo esc_html(self::preview($prompt)); ?></td>
             <td>
                 <details>
-                    <summary><?php echo esc_html__('View', 'ai-provider-for-nano-gpt'); ?></summary>
+                    <summary><?php echo esc_html__('View', 'modeltrestle-ai-connector-for-nano-gpt'); ?></summary>
                     <?php self::renderDetails($item); ?>
                 </details>
             </td>
@@ -342,33 +342,33 @@ class ActivityPage
 
     private static function renderDetails(object $item): void
     {
-        self::detail(__('Caller', 'ai-provider-for-nano-gpt'), self::propertyString($item, 'source_detail'));
+        self::detail(__('Caller', 'modeltrestle-ai-connector-for-nano-gpt'), self::propertyString($item, 'source_detail'));
         self::detail(
-            __('Request context', 'ai-provider-for-nano-gpt'),
+            __('Request context', 'modeltrestle-ai-connector-for-nano-gpt'),
             self::propertyString($item, 'request_context')
         );
         self::detail(
-            __('Generation settings', 'ai-provider-for-nano-gpt'),
+            __('Generation settings', 'modeltrestle-ai-connector-for-nano-gpt'),
             self::propertyString($item, 'request_config')
         );
-        self::detail(__('Prompt', 'ai-provider-for-nano-gpt'), self::propertyString($item, 'prompt'));
-        self::detail(__('Response', 'ai-provider-for-nano-gpt'), self::propertyString($item, 'response'));
+        self::detail(__('Prompt', 'modeltrestle-ai-connector-for-nano-gpt'), self::propertyString($item, 'prompt'));
+        self::detail(__('Response', 'modeltrestle-ai-connector-for-nano-gpt'), self::propertyString($item, 'response'));
 
         $tokens = sprintf(
             /* translators: 1: input tokens, 2: output tokens, 3: total tokens. */
-            __('Input: %1$s · Output: %2$s · Total: %3$s', 'ai-provider-for-nano-gpt'),
+            __('Input: %1$s · Output: %2$s · Total: %3$s', 'modeltrestle-ai-connector-for-nano-gpt'),
             self::displayNullable($item->input_tokens ?? null),
             self::displayNullable($item->output_tokens ?? null),
             self::displayNullable($item->total_tokens ?? null)
         );
-        self::detail(__('Tokens', 'ai-provider-for-nano-gpt'), $tokens);
+        self::detail(__('Tokens', 'modeltrestle-ai-connector-for-nano-gpt'), $tokens);
         if (self::propertyString($item, 'status') === 'error') {
             $error = trim(
                 self::propertyString($item, 'error_code')
                 . ' '
                 . self::propertyString($item, 'error_message')
             );
-            self::detail(__('Error', 'ai-provider-for-nano-gpt'), $error);
+            self::detail(__('Error', 'modeltrestle-ai-connector-for-nano-gpt'), $error);
         }
     }
 
@@ -425,7 +425,7 @@ class ActivityPage
         if ($total < 1) {
             return;
         }
-        $confirmation = __('Permanently clear the Nano-GPT activity log?', 'ai-provider-for-nano-gpt');
+        $confirmation = __('Permanently clear the Nano-GPT activity log?', 'modeltrestle-ai-connector-for-nano-gpt');
         ?>
         <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
             <input type="hidden" name="action" value="nanogpt_clear_activity">
@@ -435,7 +435,7 @@ class ActivityPage
                 class="button button-link-delete"
                 data-nanogpt-confirm="<?php echo esc_attr($confirmation); ?>"
             >
-                <?php echo esc_html__('Clear activity log', 'ai-provider-for-nano-gpt'); ?>
+                <?php echo esc_html__('Clear activity log', 'modeltrestle-ai-connector-for-nano-gpt'); ?>
             </button>
         </form>
         <?php
@@ -527,7 +527,7 @@ class ActivityPage
     private static function authorize(string $nonceAction): void
     {
         if (!current_user_can('manage_options')) {
-            wp_die(esc_html__('You are not allowed to manage these settings.', 'ai-provider-for-nano-gpt'));
+            wp_die(esc_html__('You are not allowed to manage these settings.', 'modeltrestle-ai-connector-for-nano-gpt'));
         }
         check_admin_referer($nonceAction);
     }

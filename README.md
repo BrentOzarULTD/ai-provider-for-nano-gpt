@@ -1,4 +1,4 @@
-# AI Provider for Nano-GPT
+# ModelTrestle AI Connector for Nano-GPT
 
 A [Nano-GPT](https://nano-gpt.com/) provider for the [WordPress PHP AI Client](https://github.com/WordPress/php-ai-client). It supports dynamic text and image model discovery, text generation, text-to-image generation, subscription-aware model labels, account balance display, and optional local request diagnostics in WordPress.
 
@@ -12,8 +12,8 @@ This project is a maintained fork of Jonathan Bossenger's original OpenRouter pr
 
 ## WordPress installation
 
-1. Upload the project to `/wp-content/plugins/ai-provider-for-nano-gpt/`.
-2. Activate **AI Provider for Nano-GPT**.
+1. Upload the project to `/wp-content/plugins/modeltrestle-ai-connector-for-nano-gpt/`.
+2. Activate **ModelTrestle AI Connector for Nano-GPT**.
 3. Open **Settings > Connectors** and add the Nano-GPT API key.
 4. Open **Settings > Nano-GPT** to confirm the connection and view the account balance.
 

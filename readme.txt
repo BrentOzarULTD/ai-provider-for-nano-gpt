@@ -1,5 +1,5 @@
-=== AI Provider for Nano-GPT ===
-Contributors: psykro, brentozar
+=== ModelTrestle AI Connector for Nano-GPT ===
+Contributors: psykro, brento
 Tags: ai, nano-gpt, image-generation, artificial-intelligence, connector
 Requires at least: 7.0
 Tested up to: 7.0
@@ -12,7 +12,7 @@ Nano-GPT text and image generation for the WordPress AI Client.
 
 == Description ==
 
-AI Provider for Nano-GPT connects the WordPress AI Client to Nano-GPT's OpenAI-compatible API.
+ModelTrestle connects the WordPress AI Client to Nano-GPT's OpenAI-compatible API.
 
 **Features:**
 
@@ -44,7 +44,7 @@ Nano-GPT privacy policy: https://nano-gpt.com/legal/privacy-policy
 
 == Installation ==
 
-1. Upload the plugin files to `/wp-content/plugins/ai-provider-for-nano-gpt/`.
+1. Upload the plugin files to `/wp-content/plugins/modeltrestle-ai-connector-for-nano-gpt/`.
 2. Activate the plugin through the Plugins screen.
 3. Open Settings > Connectors and configure the Nano-GPT API key.
 4. Open Settings > Nano-GPT to verify the connection and view the balance.

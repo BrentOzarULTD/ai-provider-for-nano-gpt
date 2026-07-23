@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
-<ruleset name="AI Provider for Nano-GPT Coding Standards">
-    <description>PSR-12 coding standards for AI Provider for Nano-GPT</description>
+<ruleset name="ModelTrestle AI Connector for Nano-GPT Coding Standards">
+    <description>PSR-12 coding standards for ModelTrestle AI Connector for Nano-GPT</description>
 
     <!-- Scan these files -->
     <file>src</file>
-    <file>ai-provider-for-nano-gpt.php</file>
+    <file>modeltrestle-ai-connector-for-nano-gpt.php</file>
     <file>tests</file>
 
     <!-- Ignore vendor directory -->
@@ -22,9 +22,17 @@
     <!-- Use PSR-12 standard -->
     <rule ref="PSR12"/>
 
+    <!-- The WordPress.org text domain is intentionally long and must remain literal. -->
+    <rule ref="Generic.Files.LineLength">
+        <properties>
+            <property name="lineLimit" value="140"/>
+            <property name="absoluteLineLimit" value="0"/>
+        </properties>
+    </rule>
+
     <!-- WordPress plugin bootstrap files intentionally have side effects -->
     <rule ref="PSR1.Files.SideEffects.FoundWithSymbols">
-        <exclude-pattern>ai-provider-for-nano-gpt.php</exclude-pattern>
+        <exclude-pattern>modeltrestle-ai-connector-for-nano-gpt.php</exclude-pattern>
     </rule>
 
     <!-- Check PHP 7.4 compatibility -->

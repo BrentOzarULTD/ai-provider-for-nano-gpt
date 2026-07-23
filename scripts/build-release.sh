@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-readonly PLUGIN_SLUG="ai-provider-for-nano-gpt"
+readonly PLUGIN_SLUG="modeltrestle-ai-connector-for-nano-gpt"
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly PROJECT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 readonly PLUGIN_FILE="${PROJECT_DIR}/${PLUGIN_SLUG}.php"

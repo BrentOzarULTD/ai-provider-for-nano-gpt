@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Plugin Name: AI Provider for Nano-GPT
+ * Plugin Name: ModelTrestle AI Connector for Nano-GPT
  * Plugin URI: https://github.com/BrentOzarULTD/ai-provider-for-nano-gpt
  * Description: Nano-GPT text and image generation provider for the WordPress AI Client.
  * Requires at least: 7.0
@@ -11,7 +11,7 @@
  * Author URI: https://www.brentozar.com/
  * License: GPL-2.0-or-later
  * License URI: https://spdx.org/licenses/GPL-2.0-or-later.html
- * Text Domain: ai-provider-for-nano-gpt
+ * Text Domain: modeltrestle-ai-connector-for-nano-gpt
  *
  * @package WordPress\NanoGptAiProvider
  */
