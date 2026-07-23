@@ -81,6 +81,9 @@ class LiveCurlTransporter implements HttpTransporterInterface
         $responseBody = curl_exec($handle);
         $statusCode = (int) curl_getinfo($handle, CURLINFO_RESPONSE_CODE);
         $error = curl_error($handle);
+        if (PHP_VERSION_ID < 80000) {
+            curl_close($handle);
+        }
         if (!is_string($responseBody) || $statusCode < 100) {
             throw new RuntimeException($error !== '' ? $error : 'Nano-GPT returned no response.');
         }
@@ -130,6 +133,9 @@ function liveJsonRequest(
     $body = curl_exec($handle);
     $statusCode = (int) curl_getinfo($handle, CURLINFO_RESPONSE_CODE);
     $error = curl_error($handle);
+    if (PHP_VERSION_ID < 80000) {
+        curl_close($handle);
+    }
 
     if (!is_string($body)) {
         liveFailure($error !== '' ? $error : 'Nano-GPT returned no response body.');
@@ -182,8 +188,8 @@ $text = AiClient::prompt('Reply with the single token LIVE_OK.')
     ->usingModel($textModel)
     ->usingMaxTokens(256)
     ->generateText();
-if (trim($text) === '') {
-    liveFailure('Text generation returned an empty result.');
+if (strpos($text, 'LIVE_OK') === false) {
+    liveFailure('Text generation did not return the expected contract token.');
 }
 fwrite(STDOUT, 'Text generation contract (' . $textModelId . '): OK' . PHP_EOL);
 

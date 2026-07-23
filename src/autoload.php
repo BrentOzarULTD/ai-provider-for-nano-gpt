@@ -11,7 +11,7 @@
 declare(strict_types=1);
 
 if (!defined('ABSPATH')) {
-    exit;
+    return;
 }
 
 spl_autoload_register(static function (string $class): void {

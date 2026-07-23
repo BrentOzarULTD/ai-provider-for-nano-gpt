@@ -27,7 +27,7 @@ jobs:
       NANOGPT_API_KEY: ${{ secrets.NANOGPT_API_KEY }}
       NANOGPT_LIVE_TEXT_MODEL: openai/gpt-oss-20b
       NANOGPT_LIVE_IMAGE_MODEL: flux-2-klein-4b
-      NANOGPT_LIVE_RUN_IMAGE: ${{ github.event_name == 'schedule' || inputs.run_image }}
+      NANOGPT_LIVE_RUN_IMAGE: ${{ github.event_name == 'schedule' || inputs.run_image == true }}
     steps:
       - name: Checkout
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
