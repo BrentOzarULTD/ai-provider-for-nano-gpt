@@ -77,3 +77,4 @@ The initial release supports text-to-image generation. Image editing and image-t
 * Added subscription-aware billing labels, model family, release month, and context size.
 * Added WordPress Connectors integration and account balance display.
 * Added preferred-model settings with catalog filtering and sorting.
+* Fixed image size and orientation support for Nano-GPT's model-specific resolution formats.

@@ -175,16 +175,19 @@ class NanoGptModelMetadataDirectory extends AbstractApiBasedModelMetadataDirecto
                 ? $modelData['name']
                 : $modelId;
 
+            $imageOptions = $this->imageOptions($modelData);
             $models[] = new NanoGptModelMetadata(
                 $modelId,
                 $this->buildDisplayName($baseName, 'Pay-as-you-go', $family, $releasedAt, null),
                 [CapabilityEnum::imageGeneration()],
-                $this->imageOptions($modelData),
+                $imageOptions['options'],
                 false,
                 $family,
                 $releasedAt,
                 null,
-                'image'
+                'image',
+                $imageOptions['aspectRatioSizes'],
+                $imageOptions['orientationSizes']
             );
         }
 
@@ -322,7 +325,11 @@ class NanoGptModelMetadataDirectory extends AbstractApiBasedModelMetadataDirecto
      * Builds image-generation options from the model catalog.
      *
      * @param array<string, mixed> $model Model record.
-     * @return list<SupportedOption> Supported options.
+     * @return array{
+     *     options: list<SupportedOption>,
+     *     aspectRatioSizes: array<string, string>,
+     *     orientationSizes: array<string, string>
+     * } Supported options and their exact Nano-GPT size values.
      */
     private function imageOptions(array $model): array
     {
@@ -342,37 +349,26 @@ class NanoGptModelMetadataDirectory extends AbstractApiBasedModelMetadataDirecto
             $candidateCounts = [(int) $parameters['fixed_image_count']];
         }
 
-        $aspectRatios = [];
+        $aspectRatioSizes = [];
+        $orientationSizes = [];
         $orientations = [];
-        $compatibleAspectRatios = ['1:1', '3:2', '7:4', '2:3', '4:7'];
         $resolutions = $parameters['resolutions'] ?? [];
         if (is_array($resolutions)) {
             foreach ($resolutions as $resolution) {
-                if (!is_string($resolution) || !preg_match('/^(\d+)x(\d+)$/', $resolution, $matches)) {
+                if (!is_string($resolution)) {
                     continue;
                 }
-                $width = (int) $matches[1];
-                $height = (int) $matches[2];
-                if ($width < 1 || $height < 1) {
+                $shape = $this->parseImageResolution($resolution);
+                if ($shape === null) {
                     continue;
                 }
-                $divisor = $this->greatestCommonDivisor($width, $height);
-                $aspectRatio = ($width / $divisor) . ':' . ($height / $divisor);
-                if (!in_array($aspectRatio, $compatibleAspectRatios, true)) {
-                    continue;
-                }
-                $aspectRatios[] = $aspectRatio;
-                if ($width === $height) {
-                    $orientations['square'] = MediaOrientationEnum::square();
-                } elseif ($width > $height) {
-                    $orientations['landscape'] = MediaOrientationEnum::landscape();
-                } else {
-                    $orientations['portrait'] = MediaOrientationEnum::portrait();
-                }
+
+                $aspectRatioSizes[$shape['aspectRatio']] ??= $shape['size'];
+                $orientationSizes[$shape['orientation']] ??= $shape['size'];
+                $orientations[$shape['orientation']] = $this->mediaOrientation($shape['orientation']);
             }
         }
 
-        $aspectRatios = array_values(array_unique($aspectRatios));
         $options = [
             new SupportedOption(OptionEnum::inputModalities(), [[ModalityEnum::text()]]),
             new SupportedOption(OptionEnum::outputModalities(), [[ModalityEnum::image()]]),
@@ -390,11 +386,114 @@ class NanoGptModelMetadataDirectory extends AbstractApiBasedModelMetadataDirecto
                 array_values($orientations)
             );
         }
-        if ($aspectRatios) {
-            $options[] = new SupportedOption(OptionEnum::outputMediaAspectRatio(), $aspectRatios);
+        if ($aspectRatioSizes) {
+            $options[] = new SupportedOption(
+                OptionEnum::outputMediaAspectRatio(),
+                array_keys($aspectRatioSizes)
+            );
         }
 
-        return $options;
+        return [
+            'options' => $options,
+            'aspectRatioSizes' => $aspectRatioSizes,
+            'orientationSizes' => $orientationSizes,
+        ];
+    }
+
+    /**
+     * Normalizes a Nano-GPT resolution while preserving its exact API value.
+     *
+     * @return array{aspectRatio: string, orientation: string, size: string}|null
+     */
+    private function parseImageResolution(string $resolution): ?array
+    {
+        $size = trim($resolution);
+        $normalized = strtolower($size);
+        if ($normalized === '' || $normalized === 'auto' || $normalized === 'default') {
+            return null;
+        }
+
+        if ($normalized === 'square' || $normalized === 'square_hd') {
+            return ['aspectRatio' => '1:1', 'orientation' => 'square', 'size' => $size];
+        }
+
+        if (preg_match('/^(landscape|portrait)_(\d+(?:\.\d+)?)_(\d+(?:\.\d+)?)$/', $normalized, $matches)) {
+            $first = $matches[2];
+            $second = $matches[3];
+            if ($matches[1] === 'portrait') {
+                [$first, $second] = [$second, $first];
+            }
+
+            return $this->imageShape($first, $second, $size);
+        }
+
+        if (preg_match('/^(\d+)[x*](\d+)$/', $normalized, $matches)) {
+            return $this->imageShape($matches[1], $matches[2], $size);
+        }
+
+        if (preg_match('/^(\d+(?:\.\d+)?):(\d+(?:\.\d+)?)$/', $normalized, $matches)) {
+            return $this->imageShape($matches[1], $matches[2], $size);
+        }
+
+        return null;
+    }
+
+    /**
+     * @return array{aspectRatio: string, orientation: string, size: string}|null
+     */
+    private function imageShape(string $width, string $height, string $size): ?array
+    {
+        $integerParts = $this->integerRatioParts($width, $height);
+        if ($integerParts === null) {
+            return null;
+        }
+        [$integerWidth, $integerHeight] = $integerParts;
+        $divisor = $this->greatestCommonDivisor($integerWidth, $integerHeight);
+        $orientation = 'square';
+        if ($integerWidth > $integerHeight) {
+            $orientation = 'landscape';
+        } elseif ($integerWidth < $integerHeight) {
+            $orientation = 'portrait';
+        }
+
+        return [
+            'aspectRatio' => ($integerWidth / $divisor) . ':' . ($integerHeight / $divisor),
+            'orientation' => $orientation,
+            'size' => $size,
+        ];
+    }
+
+    /**
+     * Converts decimal ratio components into positive integers of equal scale.
+     *
+     * @return array{int, int}|null
+     */
+    private function integerRatioParts(string $width, string $height): ?array
+    {
+        $widthParts = explode('.', $width, 2);
+        $heightParts = explode('.', $height, 2);
+        $widthDecimals = isset($widthParts[1]) ? strlen($widthParts[1]) : 0;
+        $heightDecimals = isset($heightParts[1]) ? strlen($heightParts[1]) : 0;
+        $decimals = max($widthDecimals, $heightDecimals);
+        $integerWidth = (int) ($widthParts[0] . str_pad($widthParts[1] ?? '', $decimals, '0'));
+        $integerHeight = (int) ($heightParts[0] . str_pad($heightParts[1] ?? '', $decimals, '0'));
+        if ($integerWidth < 1 || $integerHeight < 1) {
+            return null;
+        }
+
+        return [$integerWidth, $integerHeight];
+    }
+
+    private function mediaOrientation(string $orientation): MediaOrientationEnum
+    {
+        if ($orientation === 'landscape') {
+            return MediaOrientationEnum::landscape();
+        }
+        if ($orientation === 'portrait') {
+            return MediaOrientationEnum::portrait();
+        }
+
+        return MediaOrientationEnum::square();
     }
 
     /**

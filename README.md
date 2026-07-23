@@ -63,7 +63,7 @@ $image = AiClient::prompt('A hand-drawn map of a seaside village')
     ->generateImage();
 ```
 
-Image support currently covers text-to-image generation through Nano-GPT's OpenAI-compatible Images API. Image editing and image-to-image workflows are outside the initial scope.
+Image support currently covers text-to-image generation through Nano-GPT's OpenAI-compatible Images API. Image aspect ratios and orientations are discovered from each model's advertised resolutions. Pixel dimensions, ratio strings, and named presets are normalized for WordPress AI while the exact model-specific value is preserved for API requests. Image editing and image-to-image workflows are outside the initial scope.
 
 ## Model discovery and labels
 

@@ -32,6 +32,12 @@ class NanoGptModelMetadata extends ModelMetadata
     /** @var string Model category, such as text or image. */
     private string $category;
 
+    /** @var array<string, string> WordPress aspect ratios mapped to Nano-GPT size values. */
+    private array $aspectRatioSizes = [];
+
+    /** @var array<string, string> WordPress orientations mapped to Nano-GPT size values. */
+    private array $orientationSizes = [];
+
     /**
      * Constructor.
      *
@@ -44,6 +50,8 @@ class NanoGptModelMetadata extends ModelMetadata
      * @param int|null $releasedAt Release timestamp.
      * @param int|null $contextLength Context size in tokens.
      * @param string $category Model category.
+     * @param array<string, string> $aspectRatioSizes Aspect ratios mapped to API size values.
+     * @param array<string, string> $orientationSizes Orientations mapped to API size values.
      */
     public function __construct(
         string $id,
@@ -54,7 +62,9 @@ class NanoGptModelMetadata extends ModelMetadata
         string $family,
         ?int $releasedAt,
         ?int $contextLength,
-        string $category
+        string $category,
+        array $aspectRatioSizes = [],
+        array $orientationSizes = []
     ) {
         parent::__construct($id, $name, $supportedCapabilities, $supportedOptions);
 
@@ -63,6 +73,8 @@ class NanoGptModelMetadata extends ModelMetadata
         $this->releasedAt = $releasedAt;
         $this->contextLength = $contextLength;
         $this->category = $category;
+        $this->aspectRatioSizes = $aspectRatioSizes;
+        $this->orientationSizes = $orientationSizes;
     }
 
     public function isSubscriptionIncluded(): bool
@@ -88,5 +100,15 @@ class NanoGptModelMetadata extends ModelMetadata
     public function getCategory(): string
     {
         return $this->category;
+    }
+
+    public function getSizeForAspectRatio(string $aspectRatio): ?string
+    {
+        return $this->aspectRatioSizes[$aspectRatio] ?? null;
+    }
+
+    public function getSizeForOrientation(string $orientation): ?string
+    {
+        return $this->orientationSizes[$orientation] ?? null;
     }
 }

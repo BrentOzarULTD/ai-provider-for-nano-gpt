@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace WordPress\NanoGptAiProvider\Tests\Metadata;
 
 use PHPUnit\Framework\TestCase;
+use WordPress\AiClient\Files\Enums\MediaOrientationEnum;
 use WordPress\AiClient\Providers\Http\DTO\Response;
 use WordPress\AiClient\Providers\Models\Enums\OptionEnum;
 use WordPress\NanoGptAiProvider\Metadata\NanoGptModelMetadata;
@@ -122,6 +123,57 @@ class NanoGptModelMetadataDirectoryTest extends TestCase
         self::assertContains('1:1', $aspectRatios);
         self::assertContains('3:2', $aspectRatios);
         self::assertContains('2:3', $aspectRatios);
+    }
+
+    public function testParsesEveryNanoGptImageResolutionFormat(): void
+    {
+        $directory = new TestableNanoGptModelMetadataDirectory();
+        $models = $directory->parseImages($this->response([
+            [
+                'id' => 'mixed-resolution-test',
+                'name' => 'Mixed Resolution Test',
+                'capabilities' => ['image_generation' => true],
+                'supported_parameters' => [
+                    'resolutions' => [
+                        'square_hd',
+                        'landscape_16_9',
+                        'portrait_4_3',
+                        '2.35:1',
+                        '832*1248',
+                        'auto',
+                        '2k',
+                    ],
+                ],
+            ],
+        ]));
+
+        $aspectRatios = null;
+        $orientations = null;
+        foreach ($models[0]->getSupportedOptions() as $option) {
+            if ($option->getName()->isOutputMediaAspectRatio()) {
+                $aspectRatios = $option->getSupportedValues();
+            }
+            if ($option->getName()->isOutputMediaOrientation()) {
+                $orientations = $option->getSupportedValues();
+            }
+        }
+
+        self::assertSame(['1:1', '16:9', '3:4', '47:20', '2:3'], $aspectRatios);
+        self::assertEquals(
+            [
+                MediaOrientationEnum::square(),
+                MediaOrientationEnum::landscape(),
+                MediaOrientationEnum::portrait(),
+            ],
+            $orientations
+        );
+        self::assertSame('square_hd', $models[0]->getSizeForAspectRatio('1:1'));
+        self::assertSame('landscape_16_9', $models[0]->getSizeForAspectRatio('16:9'));
+        self::assertSame('portrait_4_3', $models[0]->getSizeForAspectRatio('3:4'));
+        self::assertSame('2.35:1', $models[0]->getSizeForAspectRatio('47:20'));
+        self::assertSame('832*1248', $models[0]->getSizeForAspectRatio('2:3'));
+        self::assertSame('landscape_16_9', $models[0]->getSizeForOrientation('landscape'));
+        self::assertSame('portrait_4_3', $models[0]->getSizeForOrientation('portrait'));
     }
 
     /**

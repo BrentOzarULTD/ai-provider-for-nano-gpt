@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace WordPress\NanoGptAiProvider\Models;
 
+use WordPress\AiClient\Files\Enums\MediaOrientationEnum;
 use WordPress\AiClient\Providers\Http\DTO\Request;
 use WordPress\AiClient\Providers\Http\DTO\RequestOptions;
 use WordPress\AiClient\Providers\Http\Enums\HttpMethodEnum;
 use WordPress\AiClient\Providers\OpenAiCompatibleImplementation\AbstractOpenAiCompatibleImageGenerationModel;
+use WordPress\NanoGptAiProvider\Metadata\NanoGptModelMetadata;
 use WordPress\NanoGptAiProvider\Provider\NanoGptProvider;
 
 /**
@@ -55,5 +57,29 @@ class NanoGptImageGenerationModel extends AbstractOpenAiCompatibleImageGeneratio
         return isset($responseData['created']) && is_int($responseData['created'])
             ? 'nanogpt-image-' . $responseData['created']
             : '';
+    }
+
+    /**
+     * Uses the exact size advertised for this model by Nano-GPT.
+     */
+    protected function prepareSizeParam(?MediaOrientationEnum $orientation, ?string $aspectRatio): string
+    {
+        $metadata = $this->metadata();
+        if ($metadata instanceof NanoGptModelMetadata) {
+            if ($aspectRatio !== null) {
+                $size = $metadata->getSizeForAspectRatio($aspectRatio);
+                if ($size !== null) {
+                    return $size;
+                }
+            }
+            if ($orientation !== null) {
+                $size = $metadata->getSizeForOrientation($orientation->value);
+                if ($size !== null) {
+                    return $size;
+                }
+            }
+        }
+
+        return parent::prepareSizeParam($orientation, $aspectRatio);
     }
 }
