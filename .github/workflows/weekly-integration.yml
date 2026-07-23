@@ -1,0 +1,46 @@
+name: Nano-GPT live integration
+
+on:
+  schedule:
+    - cron: '17 13 * * 0'
+  workflow_dispatch:
+    inputs:
+      run_image:
+        description: Generate a low-cost test image
+        required: true
+        default: true
+        type: boolean
+
+concurrency:
+  group: nanogpt-live-integration
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  live-api:
+    name: Live text, image, catalog, and balance
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      NANOGPT_API_KEY: ${{ secrets.NANOGPT_API_KEY }}
+      NANOGPT_LIVE_TEXT_MODEL: openai/gpt-oss-20b
+      NANOGPT_LIVE_IMAGE_MODEL: flux-2-klein-4b
+      NANOGPT_LIVE_RUN_IMAGE: ${{ github.event_name == 'schedule' || inputs.run_image }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@bf6b4fbd49ca58e4608c9c89fba0b8d90bd2a39f # v2.35.5
+        with:
+          php-version: '8.3'
+          coverage: none
+          tools: composer:v2
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress
+
+      - name: Run live Nano-GPT contract tests
+        run: php scripts/live-integration.php

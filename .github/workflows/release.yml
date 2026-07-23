@@ -38,8 +38,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: >-
           gh release create "${GITHUB_REF_NAME}"
-          dist/ai-provider-for-nano-gpt-*.zip
-          dist/ai-provider-for-nano-gpt-*.zip.sha256
+          dist/modeltrestle-ai-connector-for-nano-gpt-*.zip
+          dist/modeltrestle-ai-connector-for-nano-gpt-*.zip.sha256
           --verify-tag
           --generate-notes
-          --title "AI Provider for Nano-GPT ${GITHUB_REF_NAME#v}"
+          --title "ModelTrestle AI Connector for Nano-GPT ${GITHUB_REF_NAME#v}"
