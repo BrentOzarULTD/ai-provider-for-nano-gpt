@@ -1,0 +1,78 @@
+.nanogpt-model-filters {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	margin: 20px 0 12px;
+	max-width: 1200px;
+}
+
+.nanogpt-model-filters label {
+	display: flex;
+	flex: 1 1 150px;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.nanogpt-model-filters label:first-child {
+	flex-basis: 260px;
+}
+
+.nanogpt-model-filters label span {
+	font-weight: 600;
+}
+
+.nanogpt-model-filters [data-nanogpt-reset-filters] {
+	align-self: flex-end;
+}
+
+.nanogpt-model-count {
+	margin: 8px 0;
+}
+
+.nanogpt-model-table-wrap {
+	max-width: 1400px;
+	overflow-x: auto;
+}
+
+.nanogpt-model-table {
+	min-width: 1000px;
+}
+
+.nanogpt-model-table th,
+.nanogpt-model-table td {
+	vertical-align: middle;
+}
+
+.nanogpt-model-table thead th:nth-child(-n+3),
+.nanogpt-model-table .nanogpt-default-choice {
+	text-align: center;
+	width: 74px;
+}
+
+.nanogpt-model-table th[scope="row"] {
+	min-width: 280px;
+}
+
+.nanogpt-model-table th[scope="row"] code {
+	display: block;
+	font-size: 11px;
+	font-weight: 400;
+	margin-top: 3px;
+	max-width: 360px;
+	overflow-wrap: anywhere;
+}
+
+.nanogpt-model-table .button-link {
+	font-weight: 600;
+	text-decoration: none;
+}
+
+.nanogpt-model-table .button-link:focus,
+.nanogpt-model-table .button-link:hover {
+	text-decoration: underline;
+}
+
+.nanogpt-default-row th,
+.nanogpt-default-row td {
+	background: #f0f6fc;
+}

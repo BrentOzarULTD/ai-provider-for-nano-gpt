@@ -85,6 +85,8 @@ Consumers that need structured values can inspect `NanoGptModelMetadata` with `i
 
 **Settings > Nano-GPT** shows the available USD and Nano (XNO) balances. Results are cached for five minutes and can be refreshed manually. API keys are never displayed by this plugin.
 
+The same page provides a searchable, sortable model catalog and lets administrators select preferred text, vision, and image models. Saved choices are prepended to the WordPress AI plugin's model preference lists; its normal provider fallbacks remain available. Catalog filters include subscription-included status, context size, family, release month, and capability.
+
 For local development, copy `.env.example` to `.env`. Local `.env` variants and PHPUnit cache files are ignored by Git. WordPress does not load `.env` files itself; use your local environment loader or configure the key through Connectors.
 
 ## External service and privacy

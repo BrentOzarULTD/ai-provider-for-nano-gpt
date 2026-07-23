@@ -21,6 +21,7 @@ AI Provider for Nano-GPT connects the WordPress AI Client to Nano-GPT's OpenAI-c
 * Subscription-included versus paid labels in model selectors
 * Model family, release month, and context size in model labels when available
 * USD and Nano (XNO) balance display under Settings > Nano-GPT
+* Searchable and sortable model catalog with preferred text, vision, and image models
 * Native WordPress Connectors configuration
 * Automatic provider and model discovery
 
@@ -75,3 +76,4 @@ The initial release supports text-to-image generation. Image editing and image-t
 * Added Nano-GPT text-to-image generation.
 * Added subscription-aware billing labels, model family, release month, and context size.
 * Added WordPress Connectors integration and account balance display.
+* Added preferred-model settings with catalog filtering and sorting.
