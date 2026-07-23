@@ -10,8 +10,7 @@
 
 declare(strict_types=1);
 
-// This fallback autoloader is only needed inside WordPress or CLI tooling.
-if (!defined('ABSPATH') && PHP_SAPI !== 'cli') {
+if (!defined('ABSPATH')) {
     exit;
 }
 

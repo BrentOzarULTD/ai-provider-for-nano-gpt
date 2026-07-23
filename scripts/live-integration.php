@@ -17,7 +17,6 @@ use WordPress\AiClient\Providers\Http\DTO\Response;
 use WordPress\NanoGptAiProvider\Provider\NanoGptProvider;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
-require dirname(__DIR__) . '/src/autoload.php';
 
 /**
  * Minimal test-only transporter for the standalone PHP AI Client.
@@ -181,7 +180,7 @@ $textModelId = is_string($textModelId) && $textModelId !== ''
 $textModel = $registry->getProviderModel('nanogpt', $textModelId);
 $text = AiClient::prompt('Reply with the single token LIVE_OK.')
     ->usingModel($textModel)
-    ->usingMaxTokens(64)
+    ->usingMaxTokens(256)
     ->generateText();
 if (trim($text) === '') {
     liveFailure('Text generation returned an empty result.');
