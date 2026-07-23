@@ -65,15 +65,23 @@ class SettingsPage
             'nanogpt-ai-provider-settings',
             plugins_url('assets/css/settings.css', self::$pluginFile),
             [],
-            '2.0.0'
+            self::assetVersion('assets/css/settings.css')
         );
         wp_enqueue_script(
             'nanogpt-ai-provider-settings',
             plugins_url('assets/js/settings.js', self::$pluginFile),
             [],
-            '2.0.0',
+            self::assetVersion('assets/js/settings.js'),
             true
         );
+    }
+
+    private static function assetVersion(string $relativePath): string
+    {
+        $path = plugin_dir_path(self::$pluginFile) . ltrim($relativePath, '/');
+        $hash = is_file($path) ? hash_file('sha256', $path) : false;
+
+        return is_string($hash) ? '2.0.0-' . substr($hash, 0, 12) : '2.0.0';
     }
 
     /**
